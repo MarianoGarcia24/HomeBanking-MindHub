@@ -7,6 +7,9 @@
         public DateTime CreationDate { get; set; }
         public double Balance { get; set; }
         public Client Client { get; set; }
+        
+        public ICollection<Transaction> Transactions { get; set; }  
         public long ClientID { get; set; }
+
     }
 }

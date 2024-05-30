@@ -26,5 +26,6 @@ namespace HomeBankingMindHub.Repositories.Implementation
             Create(transaction);
             SaveChanges();
         }
+
     }
 }

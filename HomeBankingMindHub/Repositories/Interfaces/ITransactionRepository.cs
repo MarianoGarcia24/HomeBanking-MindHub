@@ -6,6 +6,6 @@ namespace HomeBankingMindHub.Repositories.Interfaces
     {
         IEnumerable<Transaction> GetAll();
         Transaction GetById(long id);
-        void Save();
+        void Save(Transaction transaction);
     }
 }

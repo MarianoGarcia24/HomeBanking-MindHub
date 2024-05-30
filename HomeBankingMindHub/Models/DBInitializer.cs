@@ -6,6 +6,58 @@ namespace HomeBankingMindHub.Models
     {
         public static void Initialize(HomeBankingContext context)
         {
+            AddClients(context);
+            AddAccounts(context);
+            AddTransactions(context);
+            AddLoans(context);
+        }
+
+        private static void AddLoans(HomeBankingContext context)
+        {
+            if (!context.Loans.Any())
+            {
+                var Loans = new Loan[]
+                {
+                    new() { MaxAmount = 800000, Name="Hipotecario", Payments="36"},
+                    new() { MaxAmount = 10000, Name="Personal", Payments="12,18,24,26,30"},
+                    new() { MaxAmount = 300000, Name="PyMe", Payments="12,24,36,48"},
+                    new() { MaxAmount = 15000, Name="Automotriz", Payments="6,12,24,36"}
+                };
+
+                foreach (Loan loan in Loans)
+                {
+                    context.Loans.Add(loan);
+                }
+                context.SaveChanges();
+
+                var client1 = context.Clients.FirstOrDefault(c => c.Email == "kobe23@gmail.com");
+                if (client1 != null) {
+
+                    var loan = context.Loans.FirstOrDefault(loan => loan.Name == "Hipotecario");
+                    if (loan != null)
+                    {
+                        var clientLoan1 = new ClientLoan { Amount = 500000, ClientId = client1.Id, Client = client1, Loan = loan, LoanId = loan.Id, Payments = "36" };
+                        context.ClientLoans.Add(clientLoan1);
+                    }
+                }
+                var loan1 = context.Loans.FirstOrDefault(l => l.Name == "PyMe");
+                if (loan1!= null)
+                {
+                    var clientLoan2 = new ClientLoan { Amount = 278000, ClientId = client1.Id, Client = client1, Loan = loan1, LoanId = loan1.Id, Payments = "24" };
+                    context.ClientLoans.Add(clientLoan2);
+                }
+                var loan2 = context.Loans.FirstOrDefault(l => l.Name == "Personal");
+                if (loan2 != null)
+                {
+                    var clientLoan3 = new ClientLoan { Amount = 10000, ClientId = client1.Id, Client = client1, Loan = loan2, LoanId = loan2.Id, Payments = "12" };
+                    context.ClientLoans.Add(clientLoan3);
+                }
+                context.SaveChanges(); 
+            }
+        }
+
+        private static void AddClients(HomeBankingContext context)
+        {
             if (!context.Clients.Any())
             {
                 var clients = new Client[]
@@ -21,9 +73,12 @@ namespace HomeBankingMindHub.Models
 
                 context.Clients.AddRange(clients);
                 context.SaveChanges();
-                
-            }
 
+            }
+        }
+
+        private static void AddAccounts(HomeBankingContext context)
+        {
             if (!context.Accounts.Any())
             {
                 var client_account = context.Clients.FirstOrDefault(c => c.Email == "jrr10@gmail.com");
@@ -37,12 +92,16 @@ namespace HomeBankingMindHub.Models
                     new Account{ ClientID = client_account.Id, CreationDate = DateTime.Now, Number= "USD0001", Balance = 1890},
                     new Account{ ClientID = client_account.Id, CreationDate = DateTime.Now, Number= "VIN0002", Balance = 360000}
                 };
-                foreach (Account account in accounts) {
+                foreach (Account account in accounts)
+                {
                     context.Accounts.Add(account);
                 }
                 context.SaveChanges();
             }
+        }
 
+        private static void AddTransactions(HomeBankingContext context)
+        {
             if (!context.Transactions.Any())
             {
                 var transactions = new Transaction[]
@@ -59,11 +118,6 @@ namespace HomeBankingMindHub.Models
                 }
                 context.SaveChanges();
             }
-
-
-
-
-
         }
     }
 }

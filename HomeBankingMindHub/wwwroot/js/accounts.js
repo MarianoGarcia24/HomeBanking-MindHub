@@ -17,7 +17,6 @@ var app = new Vue({
             })
         },
         formatDate: function (date) {
-            console.log(date)
             return new Date(date).toLocaleDateString('en-gb');
         }
     },

@@ -35,7 +35,7 @@ namespace HomeBankingMindHub.Controllers
         public IActionResult Get(int id) {
             try
             {
-                var client = _clientRepository.FindById(id);
+                var client = _clientRepository.GetById(id);
                 if (client != null)
                 {
                     var clientDTO = new ClientDTO(client);

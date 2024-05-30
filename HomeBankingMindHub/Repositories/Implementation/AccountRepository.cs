@@ -10,7 +10,7 @@ namespace HomeBankingMindHub.Repositories.Implementation
         {
         }
 
-        public Account FindById(long id)
+        public Account GetById(long id)
         {
             return FindByCondition(acc => acc.Id == id)
                 .Include(acc => acc.Transactions)
@@ -22,6 +22,12 @@ namespace HomeBankingMindHub.Repositories.Implementation
             return FindAll()
                 .Include(acc => acc.Transactions)
                 .ToList();
+        }
+
+        public void Save(Account account)
+        {
+            Create(account);
+            SaveChanges();
         }
     }
 }

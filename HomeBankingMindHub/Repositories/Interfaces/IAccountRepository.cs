@@ -5,6 +5,7 @@ namespace HomeBankingMindHub.Repositories.Interfaces
     public interface IAccountRepository
     {
         IEnumerable<Account> getAllAccounts();
-        Account FindById(long id);
+        Account GetById(long id);
+        void Save(Account account);
     }
 }

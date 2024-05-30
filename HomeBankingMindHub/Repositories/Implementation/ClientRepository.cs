@@ -10,7 +10,7 @@ namespace HomeBankingMindHub.Repositories.Implementation
         {
         }
 
-        public Client FindById(long id)
+        public Client GetById(long id)
         {
             return FindByCondition(client => client.Id == id)
                 .Include(client => client.Accounts)

@@ -6,7 +6,7 @@ var app = new Vue({
     },
     methods:{
         getData: function(){
-            axios.get("/api/clients/1")
+            axios.get("/api/clients/3")
             .then(function (response) {
                 //get client ifo
                 app.clientInfo = response.data;
@@ -16,7 +16,8 @@ var app = new Vue({
                 app.error = error;
             })
         },
-        formatDate: function(date){
+        formatDate: function (date) {
+            console.log(date)
             return new Date(date).toLocaleDateString('en-gb');
         }
     },

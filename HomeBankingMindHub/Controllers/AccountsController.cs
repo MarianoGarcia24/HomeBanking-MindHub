@@ -31,5 +31,22 @@ namespace HomeBankingMindHub.Controllers
             }
         }
 
+        [HttpGet("{id}")]
+        public IActionResult Get(int id)
+        {
+            try
+            {
+                var account = _accountRepository.FindById(id);
+                var accountDTO = new AccountDTO(account);
+                return Ok(accountDTO);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+
+            }
+
+        }
     }
+
 }

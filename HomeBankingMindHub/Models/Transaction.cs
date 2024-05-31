@@ -1,4 +1,6 @@
-﻿namespace HomeBankingMindHub.Models
+﻿using HomeBankingMindHub.Models.utils;
+
+namespace HomeBankingMindHub.Models
 {
     public class Transaction
     {
@@ -6,7 +8,7 @@
         public double Amount { get; set; }
         public string Description { get; set; }
         public DateTime Date {  get; set; }
-        public string Type { get; set; }
+        public TransactionType Type { get; set; }
 
         public long AccountId { get; set; }
     }

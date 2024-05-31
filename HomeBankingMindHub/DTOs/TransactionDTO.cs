@@ -12,10 +12,18 @@ namespace HomeBankingMindHub.DTOs
         public TransactionDTO(Transaction transaction)
         {
             Id = transaction.Id;
-            Type = transaction.Type;
             Amount = transaction.Amount;
             Description = transaction.Description;
             Date = transaction.Date;
+            Console.WriteLine(transaction.Type);
+            if ((int) transaction.Type == 1)
+            {
+                Type = "CREDIT";
+            }
+            else
+            {
+                Type = "DEBIT";
+            }
         }
     }
 }

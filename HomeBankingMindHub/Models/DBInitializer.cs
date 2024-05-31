@@ -106,11 +106,11 @@ namespace HomeBankingMindHub.Models
             {
                 var transactions = new Transaction[]
                 {
-                    new() { AccountId = 1, Amount = 1041.67, Description = "Camara web Mercado Libre",  Date = DateTime.Now.AddMonths(2), Type = TransactionType.CREDIT.ToString()},
-                    new() { AccountId = 2, Amount = 2390, Description = "Coca Cola en botella de vidrio",  Date = DateTime.Now.AddDays(-5), Type = TransactionType.DEBIT.ToString()},
-                    new() { AccountId = 2, Amount = 19070, Description = "Coca Cola añejada en botella residual",  Date = DateTime.Now.AddHours(10), Type = TransactionType.DEBIT.ToString()},
-                    new() { AccountId = 3, Amount = 27600, Description = "Motor de auto",  Date = DateTime.Now.AddMonths(2), Type = TransactionType.CREDIT.ToString()},
-                    new() { AccountId = 7, Amount = 27600, Description = "Cocarda",  Date = DateTime.Now.AddMonths(2), Type = TransactionType.CREDIT.ToString()}
+                    new() { AccountId = 1, Amount = 1041.67, Description = "Camara web Mercado Libre",  Date = DateTime.Now.AddMonths(2), Type = TransactionType.CREDIT},
+                    new() { AccountId = 2, Amount = 2390, Description = "Coca Cola en botella de vidrio",  Date = DateTime.Now.AddDays(-5), Type = TransactionType.DEBIT},
+                    new() { AccountId = 2, Amount = 19070, Description = "Coca Cola añejada en botella residual",  Date = DateTime.Now.AddHours(10), Type = TransactionType.DEBIT},
+                    new() { AccountId = 3, Amount = 27600, Description = "Motor de auto",  Date = DateTime.Now.AddMonths(2), Type = TransactionType.CREDIT},
+                    new() { AccountId = 7, Amount = 27600, Description = "Cocarda",  Date = DateTime.Now.AddMonths(2), Type = TransactionType.CREDIT}
                 };
                 foreach (Transaction transaction in transactions)
                 {

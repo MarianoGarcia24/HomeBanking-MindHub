@@ -10,6 +10,7 @@ namespace HomeBankingMindHub.Models
             AddAccounts(context);
             AddTransactions(context);
             AddLoans(context);
+            AddCards(context);
         }
 
         private static void AddLoans(HomeBankingContext context)
@@ -119,5 +120,27 @@ namespace HomeBankingMindHub.Models
                 context.SaveChanges();
             }
         }
+
+        private static void AddCards(HomeBankingContext context)
+        {
+            if (!context.Cards.Any())
+            {
+                var client = context.Clients.FirstOrDefault(cl => cl.Id == 1);
+                var cards = new Card[]
+                {
+                    new() { ClientId = client.Id, CardHolder=client.FirstName + " " + client.LastName, Color = ColorType.TITANIUM, Type = CardType.CREDIT, CVV = 999, FromDate=DateTime.Now.AddDays(-30), ThruDate=DateTime.Now.AddYears(1), Number="4444 9899 3752 6264"},
+                    new() { ClientId = client.Id, CardHolder=client.FirstName + " " + client.LastName, Color = ColorType.GOLD, Type = CardType.DEBIT, CVV = 982, FromDate=DateTime.Now, ThruDate=DateTime.Now.AddYears(10), Number="4589 2948 3409 2670"},
+                    new() { ClientId = client.Id, CardHolder=client.FirstName + " " + client.LastName, Color = ColorType.SILVER, Type = CardType.CREDIT, CVV = 230, FromDate=DateTime.Now, ThruDate=DateTime.Now.AddMonths(5), Number="4523 8927 8346 2109"}
+                }; 
+
+                foreach(Card card in cards)
+                {
+                    context.Cards.Add(card);
+                }
+                context.SaveChanges();
+            }
+        }
     }
+
+
 }

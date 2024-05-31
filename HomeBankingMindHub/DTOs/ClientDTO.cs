@@ -11,8 +11,8 @@ namespace HomeBankingMindHub.DTOs
         public string LastName { get; set; }
         public string Email { get; set; }
         public ICollection<AccountClientDTO> Accounts { get; set; }
-
         public ICollection<ClientLoanDTO> Loans { get; set; }
+        public ICollection<CardDTO> Cards { get; set; }
         public ClientDTO(Client client)
         {
             Id = client.Id;
@@ -21,6 +21,7 @@ namespace HomeBankingMindHub.DTOs
             LastName = client.LastName;
             Accounts = client.Accounts.Select(account => new AccountClientDTO(account)).ToList();
             Loans = client.ClientLoans.Select(cl => new ClientLoanDTO(cl)).ToList();
+            Cards = client.Cards.Select(ca => new CardDTO(ca)).ToList();
         }
     }
 }

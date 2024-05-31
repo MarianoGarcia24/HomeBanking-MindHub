@@ -16,6 +16,7 @@ namespace HomeBankingMindHub.Repositories.Implementation
                 .Include(client => client.Accounts)
                 .Include(client => client.ClientLoans)
                 .ThenInclude(clientLoan => clientLoan.Loan)
+                .Include(client => client.Cards)
                 .FirstOrDefault();
         }
 
@@ -25,6 +26,7 @@ namespace HomeBankingMindHub.Repositories.Implementation
                 .Include(client => client.Accounts)
                 .Include(client => client.ClientLoans)
                 .ThenInclude(clientLoan => clientLoan.Loan)
+                .Include(client => client.Cards)
                 .ToList();
         }
 

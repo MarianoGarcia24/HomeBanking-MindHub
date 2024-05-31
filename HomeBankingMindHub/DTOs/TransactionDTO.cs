@@ -15,15 +15,8 @@ namespace HomeBankingMindHub.DTOs
             Amount = transaction.Amount;
             Description = transaction.Description;
             Date = transaction.Date;
+            Type = transaction.Type.ToString();
             Console.WriteLine(transaction.Type);
-            if ((int) transaction.Type == 1)
-            {
-                Type = "CREDIT";
-            }
-            else
-            {
-                Type = "DEBIT";
-            }
         }
     }
 }

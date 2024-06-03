@@ -1,4 +1,5 @@
 ﻿using HomeBankingMindHub.DTOs;
+using HomeBankingMindHub.Models;
 using HomeBankingMindHub.Repositories.Implementation;
 using HomeBankingMindHub.Repositories.Interfaces;
 using Microsoft.AspNetCore.Http;
@@ -49,6 +50,33 @@ namespace HomeBankingMindHub.Controllers
             }
         }
 
+        [HttpGet("current")]
+        public IActionResult GetCurrent()
+        {
+            try
+            {
+                //El cliente guarda la cookie con los datos de su peticion en el navegador
+                //Aca preguntamos para que la encueuntre, y si la tiene devuelve el value.
+                string email = User.FindFirst("Client") != null ? User.FindFirst("Client").Value : string.Empty;
+                if (email == string.Empty)
+                {
+                    return Forbid();
+                }
 
+                Client client = _clientRepository.FindByEmail(email);
+                if (client == null)
+                {
+                    return Forbid();
+                }
+
+                var clientDTO = new ClientDTO(client);
+                return Ok(clientDTO);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }

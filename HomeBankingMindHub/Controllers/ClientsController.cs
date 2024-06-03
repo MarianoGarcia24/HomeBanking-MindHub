@@ -22,7 +22,7 @@ namespace HomeBankingMindHub.Controllers
         {
             try
             {
-                var clients = _clientRepository.GetAllClients();
+                var clients = _clientRepository.GetAll();
                 var clientsDTO = clients.Select(c => new ClientDTO(c));
                 return Ok(clientsDTO);
             }
@@ -35,7 +35,7 @@ namespace HomeBankingMindHub.Controllers
         public IActionResult Get(int id) {
             try
             {
-                var client = _clientRepository.GetById(id);
+                var client = _clientRepository.FindById(id);
                 if (client != null)
                 {
                     var clientDTO = new ClientDTO(client);

@@ -10,14 +10,14 @@ namespace HomeBankingMindHub.Repositories.Implementation
         {
         }
 
-        public Account GetById(long id)
+        public Account FindById(long id)
         {
             return FindByCondition(acc => acc.Id == id)
                 .Include(acc => acc.Transactions)
                 .FirstOrDefault();
         }
 
-        public IEnumerable<Account> getAllAccounts()
+        public IEnumerable<Account> GetAll()
         {
             return FindAll()
                 .Include(acc => acc.Transactions)

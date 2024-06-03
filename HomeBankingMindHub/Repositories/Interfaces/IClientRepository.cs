@@ -4,8 +4,8 @@ namespace HomeBankingMindHub.Repositories.Interfaces
 {
     public interface IClientRepository
     {
-        IEnumerable<Client> GetAllClients();
+        IEnumerable<Client> GetAll();
         void Save(Client client);
-        Client GetById(long id);
+        Client FindById(long id);
     }
 }

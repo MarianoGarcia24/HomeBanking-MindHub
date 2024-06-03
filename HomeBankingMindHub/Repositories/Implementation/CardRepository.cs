@@ -15,7 +15,7 @@ namespace HomeBankingMindHub.Repositories.Implementation
                 .ToList();
         }
 
-        public Card GetById(long id)
+        public Card FindById(long id)
         {
             return FindByCondition(ca => ca.Id == id)
                 .FirstOrDefault();

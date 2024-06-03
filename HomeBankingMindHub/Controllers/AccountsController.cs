@@ -21,7 +21,7 @@ namespace HomeBankingMindHub.Controllers
         {
             try
             {
-                var accounts = _accountRepository.getAllAccounts();
+                var accounts = _accountRepository.GetAll();
                 var accountsDTO = accounts.Select(account => new AccountDTO(account));
                 return Ok(accountsDTO);
             }
@@ -36,7 +36,7 @@ namespace HomeBankingMindHub.Controllers
         {
             try
             {
-                var account = _accountRepository.GetById(id);
+                var account = _accountRepository.FindById(id);
                 var accountDTO = new AccountDTO(account);
                 return Ok(accountDTO);
             }

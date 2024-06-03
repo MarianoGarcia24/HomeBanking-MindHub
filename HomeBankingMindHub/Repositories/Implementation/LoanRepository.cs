@@ -16,7 +16,7 @@ namespace HomeBankingMindHub.Repositories.Implementation
                 .ToList();
         }
 
-        public Loan GetById(long id)
+        public Loan FindById(long id)
         {
             return FindByCondition(lo => lo.Id == id)
                 .Include(lo => lo.ClientLoans)

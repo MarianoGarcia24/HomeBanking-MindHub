@@ -15,7 +15,7 @@ namespace HomeBankingMindHub.Repositories.Implementation
                 .ToList();
         }
 
-        public Transaction GetById(long id)
+        public Transaction FindById(long id)
         {
             return FindByCondition(transaction => transaction.Id == id)
                     .FirstOrDefault();

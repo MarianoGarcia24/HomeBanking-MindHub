@@ -1,5 +1,6 @@
 ﻿using HomeBankingMindHub.Models;
 using HomeBankingMindHub.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace HomeBankingMindHub.Repositories.Implementation
 {
@@ -11,17 +12,21 @@ namespace HomeBankingMindHub.Repositories.Implementation
 
         public IEnumerable<Loan> GetAll()
         {
-            throw new NotImplementedException();
+            return FindAll()
+                .ToList();
         }
 
         public Loan GetById(long id)
         {
-            throw new NotImplementedException();
+            return FindByCondition(lo => lo.Id == id)
+                .Include(lo => lo.ClientLoans)
+                .FirstOrDefault();
         }
 
         public void Save(Loan loan)
         {
-            throw new NotImplementedException();
+            Create(loan);
+            SaveChanges();
         }
     }
 }

@@ -5,13 +5,12 @@ using HomeBankingMindHub.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 
 namespace HomeBankingMindHub.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize("ClientOnly")]
-
     public class ClientsController : ControllerBase
     {
         private readonly IClientRepository _clientRepository;
@@ -54,6 +53,7 @@ namespace HomeBankingMindHub.Controllers
         }
 
         [HttpGet("current")]
+        [Authorize(Policy = "ClientOnly")]
         public IActionResult GetCurrent()
         {
             try
@@ -61,11 +61,10 @@ namespace HomeBankingMindHub.Controllers
                 //El cliente guarda la cookie con los datos de su peticion en el navegador
                 //Aca preguntamos para que la encueuntre, y si la tiene devuelve el value.
                 string email = User.FindFirst("Client") != null ? User.FindFirst("Client").Value : string.Empty;
-                if (email == string.Empty)
+                if (email.IsNullOrEmpty())
                 {
                     return StatusCode(403,"No se encontro el usuario logeado");
                 }
-
                 Client client = _clientRepository.FindByEmail(email);
                 if (client == null)
                 {
@@ -83,29 +82,29 @@ namespace HomeBankingMindHub.Controllers
         }
 
         [HttpPost]
-        public IActionResult Post([FromBody] ClientSignUpDTO client)
+        public IActionResult Post([FromBody] ClientSignUpDTO SignedClient)
         {
             try
             {
-                if (String.IsNullOrEmpty(client.Email) || String.IsNullOrEmpty(client.Password) ||
-                    String.IsNullOrEmpty(client.FirstName) || String.IsNullOrEmpty(client.LastName))
+                if (String.IsNullOrEmpty(SignedClient.Email) || String.IsNullOrEmpty(SignedClient.Password) ||
+                    String.IsNullOrEmpty(SignedClient.FirstName) || String.IsNullOrEmpty(SignedClient.LastName))
                     return StatusCode(403, "Datos Invalidos");
 
-                Client user = _clientRepository.FindByEmail(client.Email);
+                Client user = _clientRepository.FindByEmail(SignedClient.Email);
                 if (user != null) {
                     return StatusCode(403, "El mail está en uso");
                 }
 
                 Client cl = new Client
                 {
-                    Email = client.Email,
-                    Password = client.Password,
-                    FirstName = client.FirstName,
-                    LastName = client.LastName
+                    Email = SignedClient.Email,
+                    Password = SignedClient.Password,
+                    FirstName = SignedClient.FirstName,
+                    LastName = SignedClient.LastName
                 };
 
                 _clientRepository.Save(cl);
-                return Created("Cliente creado con exito",cl);
+                return StatusCode(201,new ClientDTO(SignedClient));
             }
             catch (Exception ex)
             {

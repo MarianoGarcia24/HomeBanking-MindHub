@@ -35,6 +35,9 @@ namespace HomeBankingMindHub.Controllers
                     new Claim("Client", user.Email)
                 };
 
+                //ClaimIdentity ==> se genera una identidad para identificar que alguien esta pidiendo
+                // algo. Queremos saber quien esta pidiendo algo, y que es lo que está pidiendo.
+
                 var claimsIdentity = new ClaimsIdentity(
                     claims,
                     CookieAuthenticationDefaults.AuthenticationScheme

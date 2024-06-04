@@ -1,7 +1,9 @@
-﻿using HomeBankingMindHub.Models;
+﻿using HomeBankingMindHub.DTOs;
+using HomeBankingMindHub.Models;
 using HomeBankingMindHub.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -17,10 +19,11 @@ namespace HomeBankingMindHub.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] Client client)
+        public async Task<IActionResult> Login([FromBody] ClientLoginDTO client)
         {
             try
             {
+                Console.WriteLine(client);
                 Client user = _clientRepository.FindByEmail(client.Email);
                 if (user == null || !String.Equals(user.Password, client.Password))
                 {

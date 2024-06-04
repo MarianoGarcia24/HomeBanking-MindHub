@@ -3,6 +3,7 @@ using HomeBankingMindHub.Repositories.Implementation;
 using HomeBankingMindHub.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,16 +13,31 @@ builder.Services.AddRazorPages();
 //Contexto de la DB
 builder.Services.AddDbContext<HomeBankingContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("MyDBConnection")));
 
+builder.Services.AddControllers();
+
 //Scoped's para los repositorios (cada uno genera una conexión y contexto separado)
 builder.Services.AddScoped<IClientRepository, ClientRepository>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+
+//swagger web API
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Version = "v1",
+        Title = "ToDo API",
+        Description = "An ASP.NET Core Web API for managing ToDo items",
+        TermsOfService = new Uri("https://example.com/terms"),
+    });
+});
 
 //Autenticacion
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
         .AddCookie(options =>
         {
-            options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+            options.ExpireTimeSpan = TimeSpan.FromSeconds(15);
             options.LoginPath = new PathString("/index.html");
+            
         });
 
 //Autorizacion
@@ -53,6 +69,11 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
 }
+else
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 app.UseStaticFiles();
 
 app.UseRouting();
@@ -64,7 +85,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapRazorPages();
-
-app.UseSwagger();
 
 app.Run();

@@ -2,6 +2,7 @@
 using HomeBankingMindHub.Models;
 using HomeBankingMindHub.Repositories.Implementation;
 using HomeBankingMindHub.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,6 +10,8 @@ namespace HomeBankingMindHub.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize("ClientOnly")]
+
     public class ClientsController : ControllerBase
     {
         private readonly IClientRepository _clientRepository;
@@ -60,13 +63,13 @@ namespace HomeBankingMindHub.Controllers
                 string email = User.FindFirst("Client") != null ? User.FindFirst("Client").Value : string.Empty;
                 if (email == string.Empty)
                 {
-                    return Forbid();
+                    return StatusCode(403,"No se encontro el usuario logeado");
                 }
 
                 Client client = _clientRepository.FindByEmail(email);
                 if (client == null)
                 {
-                    return Forbid();
+                    return StatusCode(403, "No se encontro el cliente en la base de datos");
                 }
 
                 var clientDTO = new ClientDTO(client);
@@ -78,5 +81,36 @@ namespace HomeBankingMindHub.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpPost]
+        public IActionResult Post([FromBody] ClientSignUpDTO client)
+        {
+            try
+            {
+                if (String.IsNullOrEmpty(client.Email) || String.IsNullOrEmpty(client.Password) ||
+                    String.IsNullOrEmpty(client.FirstName) || String.IsNullOrEmpty(client.LastName))
+                    return StatusCode(403, "Datos Invalidos");
+
+                Client user = _clientRepository.FindByEmail(client.Email);
+                if (user != null) {
+                    return StatusCode(403, "El mail está en uso");
+                }
+
+                Client cl = new Client
+                {
+                    Email = client.Email,
+                    Password = client.Password,
+                    FirstName = client.FirstName,
+                    LastName = client.LastName
+                };
+
+                _clientRepository.Save(cl);
+                return Created("Cliente creado con exito",cl);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Server Error: " + ex.Message);
+            }
+    }
     }
 }

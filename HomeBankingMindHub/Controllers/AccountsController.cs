@@ -1,5 +1,6 @@
 ﻿using HomeBankingMindHub.DTOs;
 using HomeBankingMindHub.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,6 +18,7 @@ namespace HomeBankingMindHub.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult GetAll()
         {
             try
@@ -32,6 +34,7 @@ namespace HomeBankingMindHub.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult Get(int id)
         {
             try

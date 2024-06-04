@@ -21,6 +21,7 @@ namespace HomeBankingMindHub.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy="AdminOnly")]
         public IActionResult GetAll()
         {
             try
@@ -35,6 +36,8 @@ namespace HomeBankingMindHub.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Policy = "AdminOnly")]
+
         public IActionResult Get(int id) {
             try
             {

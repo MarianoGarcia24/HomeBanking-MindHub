@@ -37,7 +37,19 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         {
             options.ExpireTimeSpan = TimeSpan.FromSeconds(15);
             options.LoginPath = new PathString("/index.html");
-            
+            options.SlidingExpiration = true;
+            options.Events = new CookieAuthenticationEvents
+            {
+                OnCheckSlidingExpiration = context =>
+                {
+                    if (context.Principal?.Claims.FirstOrDefault(c => c.Type == "AuthCookie") != null)
+                    {
+                        context.Response.Redirect("/index.html"); // Redirección por expiración de cookie
+                    }
+                    return Task.CompletedTask;
+                }
+            };
+
         });
 
 //Autorizacion
@@ -45,6 +57,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("ClientOnly", policy => policy.RequireClaim("Client"));
+    options.AddPolicy("AdminOnly", policy => policy.RequireClaim("Admin"));
 });
 
 var app = builder.Build();

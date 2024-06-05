@@ -26,5 +26,17 @@ namespace HomeBankingMindHub.Repositories.Implementation
             Create(card);
             SaveChanges();
         }
+
+        public IEnumerable<Card> FindCardsByOwner(long ownerId)
+        {
+            return FindByCondition(ca => ca.ClientId == ownerId)
+                .ToList();
+        }
+
+        public Card FindByNumber(string number)
+        {
+            return FindByCondition(ca => ca.Number == number)
+                .FirstOrDefault();
+        }
     }
 }

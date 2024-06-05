@@ -10,6 +10,13 @@ namespace HomeBankingMindHub.Repositories.Implementation
         {
         }
 
+        public IEnumerable<Account> FindAccountsByClient(long id)
+        {
+            return FindByCondition(acc => acc.ClientID == id)
+                .Include(acc => acc.Transactions)
+                .ToList();
+        }
+
         public Account FindById(long id)
         {
             return FindByCondition(acc => acc.Id == id)
@@ -24,10 +31,13 @@ namespace HomeBankingMindHub.Repositories.Implementation
                 .ToList();
         }
 
+
         public void Save(Account account)
         {
             Create(account);
             SaveChanges();
         }
+
+
     }
 }

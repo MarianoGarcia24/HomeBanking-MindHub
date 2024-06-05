@@ -41,12 +41,18 @@ namespace HomeBankingMindHub.Repositories.Implementation
         }
 
 
-
         public void Save(Client client)
         {
             Create(client);
             SaveChanges();
-            
         }
+
+        public void UpdateClient(Client client)
+        {
+            Update(client);
+            SaveChanges();
+        }
+
+        
     }
 }

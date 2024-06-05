@@ -103,33 +103,34 @@ namespace HomeBankingMindHub.Controllers
                     return StatusCode(403, "No se encontro el usuario logeado");
                 }
                 Client cl = _clientRepository.FindByEmail(email);
-                IEnumerable <Account> clAccounts = _accountRepository.FindAccountsByClient(cl.Id);
-                if (cl.Accounts.Count == 3)
+                if (cl == null)
+                {
+                    return StatusCode(403, "No se encontro usuario con el mail ingresado");
+                }
+                var clAccounts = _accountRepository.FindAccountsByClient(cl.Id);
+                if (clAccounts.Count() == 3)
                 {
                     return StatusCode(403, "El cliente no puede tener mas de 3 cuentas");
                 }
                 Random rnd = new Random();
-                int acNumber = rnd.Next(1000, 100000000);
+                string acNumber = rnd.Next(1000, 100000000).ToString();
                 Account acc = new Account
                 {
                     Balance = 0,
                     Number = "VIN - " + acNumber,
-                    Client = cl,
                     ClientID = cl.Id,
                     CreationDate = DateTime.Now,
                 };
                 _accountRepository.Save(acc);
-                cl.Accounts.Add(acc);
-                _clientRepository.UpdateClient(cl);
                 return Created("Cuenta creada con exito", acc);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                return BadRequest();
+                return BadRequest(ex.Message);
             }
         }
-        [HttpPost("current/accounts")]
+
+        [HttpPost("current/cards")]
         [Authorize(Policy = "ClientOnly")]
         public IActionResult PostCard(NewCardDTO NewCard)
         {
@@ -140,20 +141,22 @@ namespace HomeBankingMindHub.Controllers
                 {
                     return StatusCode(403, "No se encontro el usuario logeado");
                 }
-                if (newAccount.type.IsNullOrEmpty() || newAccount.color.IsNullOrEmpty())
+                if (NewCard.Type.IsNullOrEmpty() || NewCard.Color.IsNullOrEmpty())
                 {
                     return StatusCode(403, "Falta el color, o el tipo de la cuenta");
                 }
                 Client cl = _clientRepository.FindByEmail(email);
-                IEnumerable<Card> clCards = _cardRepository.FindCardsByOwner(cl.Id);
-                if (clCards.Count() == 9)
+                var clCards = _cardRepository.FindCardsByOwner(cl.Id);
+                if (clCards.Count() == 6)
                 {
                     return StatusCode(403, "El cliente no puede tener mas de 6 tarjetas");
                 }
-                if (clCards.Count(card => card.Type == CardType.DEBIT) == 3
-                    || clCards.Count(card => card.Type == CardType.CREDIT) == 3)
+
+                var newCardType = (CardType)Enum.Parse(typeof(CardType), NewCard.Type);
+
+                if (clCards.Count(card => card.Type == newCardType) == 3)
                 {
-                    return StatusCode(403, "El cliente ya tiene 3 tarjetas de un tipo");
+                    return StatusCode(403, "El cliente no puede tener mas de 3 tarjetas de " + NewCard.Type);
                 }
 
                 string cardNumber = new Random().NextInt64(1000000000000000, 9999999999999999).ToString();
@@ -167,24 +170,21 @@ namespace HomeBankingMindHub.Controllers
                 Card ca = new Card()
                 {
                     ClientId = cl.Id,
-                    Client = cl,
                     CardHolder = cl.FirstName + cl.LastName,
                     FromDate = DateTime.Now,
                     ThruDate = DateTime.Now.AddYears(5),
-                    Type = (CardType)Enum.Parse(typeof(CardType), NewCard.Type),
+                    Type = newCardType,
                     Color = (ColorType)Enum.Parse(typeof(ColorType), NewCard.Color),
                     CVV = new Random().Next(000, 999),
                     Number = cardNumber
                 };
 
                 _cardRepository.Save(ca);
-                cl.Cards.Add(ca);
-                _clientRepository.UpdateClient(cl);
                 return Created("Card created correctly", ca);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest(ex.Message);
             }
         }
 

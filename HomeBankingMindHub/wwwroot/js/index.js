@@ -26,14 +26,11 @@
         //},
         signIn: function (event) {
             event.preventDefault();
-            console.log(this.email, this.password)
             axios.post('/api/auth/login', {
                 email: this.email,
                 password: this.password
-            })
-                .then(response => {
-                    window.location.href = "/accounts.html")
-                 }
+                })
+                .then(response => window.location.href = "/accounts.html")
                 .catch(() => {
                     this.errorMsg = "Sign in failed, check the information"
                     this.errorToats.show();

@@ -35,7 +35,7 @@ namespace HomeBankingMindHub.Repositories.Implementation
 
         public Card FindByNumber(string number)
         {
-            return FindByCondition(ca => ca.Number == number)
+            return FindByCondition(ca => ca.Number.Equals(number))
                 .FirstOrDefault();
         }
     }

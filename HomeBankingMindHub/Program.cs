@@ -17,6 +17,7 @@ builder.Services.AddControllers();
 
 //Scoped's para los repositorios (cada uno genera una conexión y contexto separado)
 builder.Services.AddScoped<IClientRepository, ClientRepository>();
+builder.Services.AddScoped<ICardRepository, CardRepository>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 
 //swagger web API
@@ -35,7 +36,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
         .AddCookie(options =>
         {
-            options.ExpireTimeSpan = TimeSpan.FromSeconds(15);
+            options.ExpireTimeSpan = TimeSpan.FromSeconds(3600);
             options.LoginPath = new PathString("/index.html");
             options.SlidingExpiration = true;
             options.Events = new CookieAuthenticationEvents

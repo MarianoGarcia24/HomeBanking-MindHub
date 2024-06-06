@@ -1,6 +1,7 @@
 ﻿using HomeBankingMindHub.DTOs;
 using HomeBankingMindHub.Models;
 using HomeBankingMindHub.Repositories.Interfaces;
+using HomeBankingMindHub.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -13,9 +14,9 @@ namespace HomeBankingMindHub.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly IClientRepository _clientRepository;
-        public AuthController(IClientRepository clientRepository) {
-            _clientRepository = clientRepository;
+        private readonly IClientService _clientService;
+        public AuthController(IClientService clientService) {
+            _clientService = clientService;
         }
 
         [HttpPost("login")]
@@ -23,24 +24,15 @@ namespace HomeBankingMindHub.Controllers
         {
             try
             {
-                Console.WriteLine(client);
-                Client user = _clientRepository.FindByEmail(client.Email);
-                if (user == null || !String.Equals(user.Password, client.Password))
-                {
-                    return Unauthorized();
-                }
-
+                _clientService.ValidateCredentials(client);
                 var claims = new List<Claim>
                 {
-                    new Claim("Client", user.Email)
+                    new Claim("Client", client.Email)
                 };
 
 
                 if (client.Email == "kobe23@gmail.com")
-                    claims.Add(new Claim("Admin", user.Email));
-
-                
-
+                    claims.Add(new Claim("Admin", client.Email));
 
                 //ClaimIdentity ==> se genera una identidad para identificar que alguien esta pidiendo
                 // algo. Queremos saber quien esta pidiendo algo, y que es lo que está pidiendo.
@@ -56,6 +48,9 @@ namespace HomeBankingMindHub.Controllers
                     );
 
                 return Ok();
+            }
+            catch(InvalidOperationException ex) {
+                return Unauthorized(ex.Message);
             }
             catch (Exception ex)
             {

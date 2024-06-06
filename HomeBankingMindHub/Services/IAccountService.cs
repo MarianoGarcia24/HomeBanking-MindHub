@@ -1,4 +1,5 @@
-﻿using HomeBankingMindHub.Models;
+﻿using HomeBankingMindHub.DTOs;
+using HomeBankingMindHub.Models;
 
 namespace HomeBankingMindHub.Services
 {
@@ -9,5 +10,7 @@ namespace HomeBankingMindHub.Services
         IEnumerable <Account> GetAllAccounts();
         Account GetAccountById(long id);
         Account CreateNewAccount(long clientID);
+        IEnumerable<AccountDTO> GetAllAccountDTOs();
+        AccountDTO GetAccountDTOById(long id);
     }
 }

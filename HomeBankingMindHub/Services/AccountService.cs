@@ -1,4 +1,5 @@
-﻿using HomeBankingMindHub.Models;
+﻿using HomeBankingMindHub.DTOs;
+using HomeBankingMindHub.Models;
 using HomeBankingMindHub.Repositories.Interfaces;
 using Microsoft.IdentityModel.Tokens;
 
@@ -47,7 +48,7 @@ namespace HomeBankingMindHub.Services
             Account ac = _accountRepository.FindById(id);
             if (ac == null)
             {
-                throw new NullReferenceException();
+                throw new NullReferenceException("No existe cuenta para el id solicitado.");
             }
             return ac;
         }
@@ -69,6 +70,16 @@ namespace HomeBankingMindHub.Services
         public void SaveAccount(Account account)
         {
             _accountRepository.Save(account);
+        }
+
+        public IEnumerable<AccountDTO> GetAllAccountDTOs()
+        {
+            return GetAllAccounts().Select(acc => new AccountDTO(acc));
+        }
+
+        public AccountDTO GetAccountDTOById(long id)
+        {
+            return new AccountDTO(GetAccountById(id));
         }
     }
 }

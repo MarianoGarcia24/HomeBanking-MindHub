@@ -9,6 +9,7 @@ namespace HomeBankingMindHub.Services
         IEnumerable <Client> GetAll();
         Client GetClientByEmail(string email);
         Client CreateClient(ClientSignUpDTO signUpDTO);
+        void ValidateCredentials(ClientLoginDTO clientLoginDTO);
 
     }
 }

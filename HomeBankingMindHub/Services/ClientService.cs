@@ -24,7 +24,7 @@ namespace HomeBankingMindHub.Services
         {
             Client cl = _clientRepository.FindByEmail(email);
             if (cl == null) 
-                throw new NullReferenceException();
+                throw new NullReferenceException("El cliente no existe en la base de datos");
             return cl;
         }
 
@@ -79,5 +79,11 @@ namespace HomeBankingMindHub.Services
             _clientRepository.Save(client);
         }
 
+        public void ValidateCredentials(ClientLoginDTO clientLoginDTO)
+        {
+            Client cl = GetClientByEmail(clientLoginDTO.Email);
+            if (cl == null || !String.Equals(clientLoginDTO.Password, cl.Password))
+                throw new InvalidOperationException("Contraseña incorrecta");
+        }
     }
 }

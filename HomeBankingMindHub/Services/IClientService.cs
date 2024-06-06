@@ -1,4 +1,5 @@
-﻿using HomeBankingMindHub.Models;
+﻿using HomeBankingMindHub.DTOs;
+using HomeBankingMindHub.Models;
 
 namespace HomeBankingMindHub.Services
 {
@@ -7,6 +8,7 @@ namespace HomeBankingMindHub.Services
         Client GetClientById(long clientId);
         IEnumerable <Client> GetAll();
         Client GetClientByEmail(string email);
+        Client CreateClient(ClientSignUpDTO signUpDTO);
 
     }
 }

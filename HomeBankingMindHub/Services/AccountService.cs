@@ -12,6 +12,36 @@ namespace HomeBankingMindHub.Services
             _accountRepository = accountRepository;
         }
 
+        public string GenerateNewAccountNumber()
+        {
+            string acNumber;
+            do
+            {
+                acNumber = new Random().Next(1000, 100000000).ToString();
+            } while (_accountRepository.FindByAccountNumber(acNumber) != null);
+            return acNumber;
+            
+        }
+
+        public Account CreateNewAccount(long clientID)
+        {
+            var clAccounts = GetAccountsByClient(clientID);
+            if (clAccounts.Count() == 3)
+            {
+                throw new InvalidOperationException("Numero de cuentas máximo alcanzado. El cliente posee 3 cuentas.");
+            }
+            string acNumber = GenerateNewAccountNumber();
+            Account acc = new Account
+            {
+                Balance = 0,
+                Number = "VIN - " + acNumber,
+                ClientID = clientID,
+                CreationDate = DateTime.Now,
+            };
+            SaveAccount(acc);
+            return acc;
+        }
+
         public Account GetAccountById(long id)
         {
             Account ac = _accountRepository.FindById(id);
@@ -25,8 +55,6 @@ namespace HomeBankingMindHub.Services
         public IEnumerable<Account> GetAccountsByClient(long id)
         {
             IEnumerable<Account> accs = _accountRepository.FindAccountsByClient(id);
-            if (accs.IsNullOrEmpty())
-                throw new NullReferenceException();
             return accs;
         }
 

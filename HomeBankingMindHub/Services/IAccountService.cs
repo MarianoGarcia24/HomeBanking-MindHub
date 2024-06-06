@@ -8,5 +8,6 @@ namespace HomeBankingMindHub.Services
         void SaveAccount(Account account);
         IEnumerable <Account> GetAllAccounts();
         Account GetAccountById(long id);
+        Account CreateNewAccount(long clientID);
     }
 }

@@ -17,6 +17,14 @@ namespace HomeBankingMindHub.Repositories.Implementation
                 .ToList();
         }
 
+        public Account FindByAccountNumber(string accountNumber)
+        {
+            return FindByCondition(acc => acc.Number == accountNumber)
+                .Include(acc => acc.Transactions)
+                .FirstOrDefault();
+                 
+        }
+
         public Account FindById(long id)
         {
             return FindByCondition(acc => acc.Id == id)

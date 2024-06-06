@@ -28,7 +28,7 @@ namespace HomeBankingMindHub.Controllers
         }
 
         [HttpGet]
-/       [Authorize(Policy = "AdminOnly")]
+        [Authorize(Policy = "AdminOnly")]
         public IActionResult GetAll()
         {
             try
@@ -44,7 +44,6 @@ namespace HomeBankingMindHub.Controllers
 
         [HttpGet("{id}")]
         [Authorize(Policy = "AdminOnly")]
-
         public IActionResult Get(int id) 
         {
             try
@@ -76,7 +75,7 @@ namespace HomeBankingMindHub.Controllers
                 {
                     return StatusCode(403, "No se encontro el usuario logeado");
                 }
-
+                
                 Client client = _clientService.GetClientByEmail(email);
                 if (client == null)
                 {
@@ -104,27 +103,14 @@ namespace HomeBankingMindHub.Controllers
                 {
                     return StatusCode(403, "No se encontro el usuario logeado");
                 }
+
                 Client cl = _clientService.GetClientByEmail(email);
-                if (cl == null)
-                {
-                    return StatusCode(403, "No se encontro usuario con el mail ingresado");
-                }
-                var clAccounts = _accountService.GetAccountsByClient(cl.Id);
-                if (clAccounts.Count() == 3)
-                {
-                    return StatusCode(403, "El cliente no puede tener mas de 3 cuentas");
-                }
-                Random rnd = new Random();
-                string acNumber = rnd.Next(1000, 100000000).ToString();
-                Account acc = new Account
-                {
-                    Balance = 0,
-                    Number = "VIN - " + acNumber,
-                    ClientID = cl.Id,
-                    CreationDate = DateTime.Now,
-                };
-                _accountService.SaveAccount(acc);
+                Account acc = _accountService.CreateNewAccount(cl.Id);
                 return Created("Cuenta creada con exito", acc);
+            }
+            catch(InvalidOperationException ex)
+            {
+                return StatusCode(403, ex.Message);
             }
             catch (Exception ex)
             {
@@ -132,94 +118,49 @@ namespace HomeBankingMindHub.Controllers
             }
         }
 
-        //[HttpPost("current/cards")]
-        //[Authorize(Policy = "ClientOnly")]
-        //public IActionResult PostCard(NewCardDTO NewCard)
-        //{
-        //    try
-        //    {
-        //        string email = User.FindFirst("Client") != null ? User.FindFirst("Client").Value : string.Empty;
-        //        if (email.IsNullOrEmpty())
-        //        {
-        //            return StatusCode(403, "No se encontro el usuario logeado");
-        //        }
-        //        if (NewCard.Type.IsNullOrEmpty() || NewCard.Color.IsNullOrEmpty())
-        //        {
-        //            return StatusCode(403, "Falta el color, o el tipo de la cuenta");
-        //        }
-        //        Client cl = _clientRepository.FindByEmail(email);
-        //        var clCards = _cardRepository.FindCardsByOwner(cl.Id);
-        //        if (clCards.Count() == 6)
-        //        {
-        //            return StatusCode(403, "El cliente no puede tener mas de 6 tarjetas");
-        //        }
+        [HttpPost("current/cards")]
+        [Authorize(Policy = "ClientOnly")]
+        public IActionResult PostCard(NewCardDTO NewCard)
+        {
+            try
+            {
+                string email = User.FindFirst("Client") != null ? User.FindFirst("Client").Value : string.Empty;
+                if (email.IsNullOrEmpty())
+                {
+                    return StatusCode(403, "No se encontro el usuario logeado");
+                }
 
-        //        var newCardType = (CardType)Enum.Parse(typeof(CardType), NewCard.Type);
-
-        //        if (clCards.Count(card => card.Type == newCardType) == 3)
-        //        {
-        //            return StatusCode(403, "El cliente no puede tener mas de 3 tarjetas de " + NewCard.Type);
-        //        }
-
-        //        string cardNumber = new Random().NextInt64(1000000000000000, 9999999999999999).ToString();
-
-        //        while (_cardRepository.FindByNumber(cardNumber) != null)
-        //        {
-        //            cardNumber = new Random().NextInt64(1000000000000000, 9999999999999999).ToString();
-        //        }
+                Client cl = _clientService.GetClientByEmail(email);
+                Card ca = _cardService.CreateCard(NewCard, cl.Id, cl.FirstName + cl.LastName);
+                return Created("Card created correctly", ca);
+            }
+            catch(NullReferenceException ex)
+            {
+                return StatusCode(403, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
 
-        //        Card ca = new Card()
-        //        {
-        //            ClientId = cl.Id,
-        //            CardHolder = cl.FirstName + cl.LastName,
-        //            FromDate = DateTime.Now,
-        //            ThruDate = DateTime.Now.AddYears(5),
-        //            Type = newCardType,
-        //            Color = (ColorType) Enum.Parse(typeof(ColorType), NewCard.Color),
-        //            CVV = new Random().Next(000, 999),
-        //            Number = cardNumber
-        //        };
-
-        //        _cardRepository.Save(ca);
-        //        return Created("Card created correctly", ca);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest(ex.Message);
-        //    }
-        //}
-
-
-        //[HttpPost]
-        //public IActionResult Post([FromBody] ClientSignUpDTO SignedClient)
-        //{
-        //    try
-        //    {
-        //        if (String.IsNullOrEmpty(SignedClient.Email) || String.IsNullOrEmpty(SignedClient.Password) ||
-        //            String.IsNullOrEmpty(SignedClient.FirstName) || String.IsNullOrEmpty(SignedClient.LastName))
-        //            return StatusCode(403, "Datos Invalidos");
-
-        //        Client user = _clientRepository.FindByEmail(SignedClient.Email);
-        //        if (user != null) {
-        //            return StatusCode(403, "El mail está en uso");
-        //        }
-
-        //        Client cl = new Client
-        //        {
-        //            Email = SignedClient.Email,
-        //            Password = SignedClient.Password,
-        //            FirstName = SignedClient.FirstName,
-        //            LastName = SignedClient.LastName
-        //        };
-
-        //        _clientRepository.Save(cl);
-        //        return StatusCode(201,new ClientDTO(SignedClient));
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, "Server Error: " + ex.Message);
-        //    }
-        //}
+        [HttpPost]
+        public IActionResult Post([FromBody] ClientSignUpDTO SignedClient)
+        {
+            try
+            {
+                _clientService.CreateClient(SignedClient);
+                return StatusCode(201, new ClientDTO(SignedClient));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return StatusCode(403, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Server Error: " + ex.Message);
+            }
+        }
     }
 }

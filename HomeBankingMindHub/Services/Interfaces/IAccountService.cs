@@ -1,14 +1,14 @@
 ﻿using HomeBankingMindHub.DTOs;
 using HomeBankingMindHub.Models;
 
-namespace HomeBankingMindHub.Services
+namespace HomeBankingMindHub.Services.Interfaces
 {
     public interface IAccountService
     {
-        IEnumerable <Account> GetAccountsByClient(long id);
+        IEnumerable<Account> GetAccountsByClient(long id);
         void SaveAccount(Account account);
         Response GetAllAccounts();
-        AccountClientDTO CreateNewAccount(long clientID);
         Response GetAccountDTOById(long id);
+        AccountClientDTO CreateNewAccount(long clientID);
     }
 }

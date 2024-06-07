@@ -2,29 +2,30 @@
 using HomeBankingMindHub.Models;
 using HomeBankingMindHub.Models.utils;
 using HomeBankingMindHub.Repositories.Interfaces;
+using HomeBankingMindHub.Services.Interfaces;
 using Microsoft.IdentityModel.Tokens;
 
-namespace HomeBankingMindHub.Services
+namespace HomeBankingMindHub.Services.Implementations
 {
     public class CardService : ICardService
     {
         private readonly ICardRepository _cardRepository;
 
-        public CardService(ICardRepository cardRepository) 
+        public CardService(ICardRepository cardRepository)
         {
             _cardRepository = cardRepository;
         }
         public CardDTO GetCardByNumber(string Number)
         {
             Card ca = _cardRepository.FindByNumber(Number);
-            if (ca!=null) throw new NullReferenceException();
+            if (ca != null) throw new NullReferenceException();
             return new CardDTO(ca);
         }
 
         public IEnumerable<CardDTO> GetCardsByOwner(long Id)
         {
             IEnumerable<CardDTO> ca = _cardRepository.FindCardsByOwner(Id).Select(c => new CardDTO(c)).ToList();
-            if (ca==null)
+            if (ca == null)
                 throw new NullReferenceException();
             return ca;
         }

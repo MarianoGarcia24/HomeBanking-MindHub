@@ -13,5 +13,10 @@ namespace HomeBankingMindHub.Services
             this.Data = Data;
         }
 
+        public Response(HttpStatusCode statusCode)
+        {
+            StatusCode = (int)statusCode;
+        }
+
     }
 }

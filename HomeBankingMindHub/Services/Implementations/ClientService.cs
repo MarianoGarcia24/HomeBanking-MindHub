@@ -2,9 +2,10 @@
 using HomeBankingMindHub.Models;
 using HomeBankingMindHub.Repositories.Implementation;
 using HomeBankingMindHub.Repositories.Interfaces;
+using HomeBankingMindHub.Services.Interfaces;
 using System.Net;
 
-namespace HomeBankingMindHub.Services
+namespace HomeBankingMindHub.Services.Implementations
 {
     public class ClientService : IClientService
     {
@@ -24,12 +25,12 @@ namespace HomeBankingMindHub.Services
         public Response GetClientByEmail(string email)
         {
             Client cl = _clientRepository.FindByEmail(email);
-            if (cl == null) 
-                return new Response(System.Net.HttpStatusCode.NotFound,"El cliente no existe en la base de datos");
-            return new Response(System.Net.HttpStatusCode.OK, new ClientDTO(cl));
+            if (cl == null)
+                return new Response(HttpStatusCode.NotFound, "El cliente no existe en la base de datos");
+            return new Response(HttpStatusCode.OK, new ClientDTO(cl));
         }
 
-        private Client FindClientByEmail (string email) 
+        private Client FindClientByEmail(string email)
         {
             Client cl = _clientRepository.FindByEmail(email);
             if (cl == null)
@@ -43,14 +44,14 @@ namespace HomeBankingMindHub.Services
         {
             Client cl = _clientRepository.FindById(clientId);
             if (cl == null)
-                return new Response(System.Net.HttpStatusCode.BadRequest, "No se encontro el cliente solicitado");
-            return new Response(System.Net.HttpStatusCode.OK,new ClientDTO(cl));
+                return new Response(HttpStatusCode.BadRequest, "No se encontro el cliente solicitado");
+            return new Response(HttpStatusCode.OK, new ClientDTO(cl));
         }
 
         private bool ValidateEntries(ClientSignUpDTO signUpDTO)
         {
-            if (String.IsNullOrEmpty(signUpDTO.Email) || String.IsNullOrEmpty(signUpDTO.Password) ||
-                   String.IsNullOrEmpty(signUpDTO.FirstName) || String.IsNullOrEmpty(signUpDTO.LastName))
+            if (string.IsNullOrEmpty(signUpDTO.Email) || string.IsNullOrEmpty(signUpDTO.Password) ||
+                   string.IsNullOrEmpty(signUpDTO.FirstName) || string.IsNullOrEmpty(signUpDTO.LastName))
                 return false;
             return true;
         }
@@ -67,11 +68,11 @@ namespace HomeBankingMindHub.Services
         {
             //Valido los datos de entrada
             if (!ValidateEntries(signUpDTO))
-                return new Response(HttpStatusCode.BadRequest,"Datos de creacion invalidos. Corrija los errores y reintente nuevamente");
+                return new Response(HttpStatusCode.BadRequest, "Datos de creacion invalidos. Corrija los errores y reintente nuevamente");
             //Valido si el email no esta en uso
             if (!ValidateEmail(signUpDTO.Email))
-                return new Response(HttpStatusCode.Forbidden,"El mail ya se encuentra en uso. Pruebe con uno nuevo");
-           
+                return new Response(HttpStatusCode.Forbidden, "El mail ya se encuentra en uso. Pruebe con uno nuevo");
+
             //Lo creo
             Client cl = new Client
             {
@@ -83,7 +84,7 @@ namespace HomeBankingMindHub.Services
             //Llamo al repositorio para guardarlo
             SaveClient(cl);
             cl = FindClientByEmail(cl.Email);
-            return new Response(HttpStatusCode.Created,cl);
+            return new Response(HttpStatusCode.Created, cl);
         }
 
         public void SaveClient(Client client)
@@ -94,9 +95,9 @@ namespace HomeBankingMindHub.Services
         public Response ValidateCredentials(ClientLoginDTO clientLoginDTO)
         {
             Client cl = FindClientByEmail(clientLoginDTO.Email);
-            if (cl == null || !String.Equals(clientLoginDTO.Password, cl.Password))
-                return  new Response(HttpStatusCode.Unauthorized,("Credenciales invalidas"));
-            return new Response(HttpStatusCode.OK,cl);  
+            if (cl == null || !string.Equals(clientLoginDTO.Password, cl.Password))
+                return new Response(HttpStatusCode.Unauthorized, "Credenciales invalidas");
+            return new Response(HttpStatusCode.OK, cl);
         }
     }
 }

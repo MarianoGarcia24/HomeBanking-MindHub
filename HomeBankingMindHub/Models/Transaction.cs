@@ -10,6 +10,6 @@ namespace HomeBankingMindHub.Models
         public DateTime Date {  get; set; }
         public TransactionType Type { get; set; }
 
-        public long AccountId { get; set; }
+        public string AccountId { get; set; }
     }
 }

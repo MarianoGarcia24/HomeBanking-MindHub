@@ -1,9 +1,10 @@
 ﻿using HomeBankingMindHub.DTOs;
 using HomeBankingMindHub.Models;
 using HomeBankingMindHub.Repositories.Interfaces;
+using HomeBankingMindHub.Services.Interfaces;
 using Microsoft.IdentityModel.Tokens;
 
-namespace HomeBankingMindHub.Services
+namespace HomeBankingMindHub.Services.Implementations
 {
     public class AccountService : IAccountService
     {
@@ -62,7 +63,7 @@ namespace HomeBankingMindHub.Services
         public Response GetAllAccounts()
         {
             IEnumerable<Account> accs = _accountRepository.GetAll();
-            return new Response(System.Net.HttpStatusCode.OK,accs);
+            return new Response(System.Net.HttpStatusCode.OK, accs);
         }
 
         public void SaveAccount(Account account)
@@ -75,7 +76,7 @@ namespace HomeBankingMindHub.Services
             Response res = GetAccountById(id);
             if (res.StatusCode == 200)
             {
-                AccountDTO newAcc = new AccountDTO((Account) res.Data);
+                AccountDTO newAcc = new AccountDTO((Account)res.Data);
                 res.Data = newAcc;
                 return res;
             }

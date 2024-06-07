@@ -1,7 +1,7 @@
 ﻿using HomeBankingMindHub.DTOs;
 using HomeBankingMindHub.Models;
 
-namespace HomeBankingMindHub.Services
+namespace HomeBankingMindHub.Services.Interfaces
 {
     public interface ICardService
     {

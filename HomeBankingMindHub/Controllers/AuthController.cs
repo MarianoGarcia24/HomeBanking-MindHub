@@ -15,8 +15,10 @@ namespace HomeBankingMindHub.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IClientService _clientService;
-        public AuthController(IClientService clientService) {
+        private readonly IAccountService _accountService;
+        public AuthController(IClientService clientService, IAccountService accountService) {
             _clientService = clientService;
+            _accountService = accountService;
         }
 
         [HttpPost("login")]
@@ -46,6 +48,8 @@ namespace HomeBankingMindHub.Controllers
                     CookieAuthenticationDefaults.AuthenticationScheme,
                     new ClaimsPrincipal(claimsIdentity)
                     );
+
+                
 
                 return Ok();
             }

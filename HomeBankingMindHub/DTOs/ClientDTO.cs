@@ -28,7 +28,7 @@ namespace HomeBankingMindHub.DTOs
         {
             FirstName = client.FirstName;
             LastName = client.LastName;
-            Email = client.Email;           
+            Email = client.Email;
         }
     }
 }

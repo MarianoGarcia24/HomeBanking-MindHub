@@ -16,7 +16,6 @@ namespace HomeBankingMindHub.DTOs
             Description = transaction.Description;
             Date = transaction.Date;
             Type = transaction.Type.ToString();
-            Console.WriteLine(transaction.Type);
         }
     }
 }

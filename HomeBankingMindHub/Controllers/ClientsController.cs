@@ -91,16 +91,13 @@ namespace HomeBankingMindHub.Controllers
                     return StatusCode(403, "No se encontro el usuario logeado");
                 }
                 Response res = _clientService.GetClientByEmail(email);
-
                 if (res.StatusCode == 200)
                 {
                     ClientDTO cl = (ClientDTO)res.Data;
                     AccountClientDTO acc = _accountService.CreateNewAccount(cl.Id);
                     return Created("Cuenta creada con exito", acc);
                 }
-
                 return StatusCode(res.StatusCode, res.Data);
-
             }
             catch (Exception ex)
             {
@@ -121,13 +118,14 @@ namespace HomeBankingMindHub.Controllers
                 }
 
                 Response res = _clientService.GetClientByEmail(email);
-                if (res.StatusCode != 200)
+                if (res.StatusCode == 200)
                 {
-                    return StatusCode(res.StatusCode, res.Data);
+                    ClientDTO cl = (ClientDTO)res.Data;
+                    CardDTO ca = _cardService.CreateCard(NewCard, cl.Id, cl.FirstName + cl.LastName);
+                    return Created("Card created correctly", ca);
                 }
-                ClientDTO cl = (ClientDTO) res.Data;
-                CardDTO ca = _cardService.CreateCard(NewCard, cl.Id, cl.FirstName + cl.LastName);
-                return Created("Card created correctly", ca);
+                return StatusCode(res.StatusCode, res.Data);
+
             }
             catch (Exception ex)
             {

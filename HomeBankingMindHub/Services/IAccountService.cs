@@ -7,10 +7,8 @@ namespace HomeBankingMindHub.Services
     {
         IEnumerable <Account> GetAccountsByClient(long id);
         void SaveAccount(Account account);
-        IEnumerable <Account> GetAllAccounts();
-        Account GetAccountById(long id);
+        Response GetAllAccounts();
         AccountClientDTO CreateNewAccount(long clientID);
-        IEnumerable<AccountDTO> GetAllAccountDTOs();
-        AccountDTO GetAccountDTOById(long id);
+        Response GetAccountDTOById(long id);
     }
 }

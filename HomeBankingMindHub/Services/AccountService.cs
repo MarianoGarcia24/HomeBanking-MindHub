@@ -43,14 +43,14 @@ namespace HomeBankingMindHub.Services
             return new AccountClientDTO(acc2);
         }
 
-        public Account GetAccountById(long id)
+        private Response GetAccountById(long id)
         {
             Account ac = _accountRepository.FindById(id);
             if (ac == null)
             {
-                throw new NullReferenceException("No existe cuenta para el id solicitado.");
+                return new Response(System.Net.HttpStatusCode.NotFound, "No se encontro la cuenta solicitada: " + id);
             }
-            return ac;
+            return new Response(System.Net.HttpStatusCode.OK, ac);
         }
 
         public IEnumerable<Account> GetAccountsByClient(long id)
@@ -59,12 +59,10 @@ namespace HomeBankingMindHub.Services
             return accs;
         }
 
-        public IEnumerable<Account> GetAllAccounts()
+        public Response GetAllAccounts()
         {
             IEnumerable<Account> accs = _accountRepository.GetAll();
-            if (accs.IsNullOrEmpty())
-                throw new NullReferenceException();
-            return accs;
+            return new Response(System.Net.HttpStatusCode.OK,accs);
         }
 
         public void SaveAccount(Account account)
@@ -72,14 +70,17 @@ namespace HomeBankingMindHub.Services
             _accountRepository.Save(account);
         }
 
-        public IEnumerable<AccountDTO> GetAllAccountDTOs()
+        public Response GetAccountDTOById(long id)
         {
-            return GetAllAccounts().Select(acc => new AccountDTO(acc));
+            Response res = GetAccountById(id);
+            if (res.StatusCode == 200)
+            {
+                AccountDTO newAcc = new AccountDTO((Account) res.Data);
+                res.Data = newAcc;
+                return res;
+            }
+            return res;
         }
 
-        public AccountDTO GetAccountDTOById(long id)
-        {
-            return new AccountDTO(GetAccountById(id));
-        }
     }
 }

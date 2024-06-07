@@ -24,8 +24,8 @@ namespace HomeBankingMindHub.Controllers
         {
             try
             {
-                var accounts = _accountService.GetAllAccountDTOs();
-                return Ok(accounts);
+                Response res = _accountService.GetAllAccounts();
+                return StatusCode(res.StatusCode,res.Data);
             }
             catch (Exception ex)
             {
@@ -39,8 +39,8 @@ namespace HomeBankingMindHub.Controllers
         {
             try
             {
-                var accountDTO = _accountService.GetAccountDTOById(id);
-                return Ok(accountDTO);
+                Response res = _accountService.GetAccountDTOById(id);
+                return StatusCode(res.StatusCode, res.Data);
             }
             catch (Exception ex)
             {

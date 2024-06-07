@@ -26,7 +26,9 @@ namespace HomeBankingMindHub.Controllers
         {
             try
             {
-                _clientService.ValidateCredentials(client);
+                Response res = _clientService.ValidateCredentials(client);
+                if (res.StatusCode != 200)
+                    return StatusCode(res.StatusCode, res.Data);
                 var claims = new List<Claim>
                 {
                     new Claim("Client", client.Email)
@@ -48,13 +50,7 @@ namespace HomeBankingMindHub.Controllers
                     CookieAuthenticationDefaults.AuthenticationScheme,
                     new ClaimsPrincipal(claimsIdentity)
                     );
-
-                
-
-                return Ok();
-            }
-            catch(InvalidOperationException ex) {
-                return Unauthorized(ex.Message);
+                return Ok("Cliente Autorizado");
             }
             catch (Exception ex)
             {

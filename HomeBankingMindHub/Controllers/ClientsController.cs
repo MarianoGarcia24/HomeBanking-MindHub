@@ -46,8 +46,8 @@ namespace HomeBankingMindHub.Controllers
         {
             try
             {
-                ClientDTO client = _clientService.GetClientById(id);
-                return Ok(client);
+                Response response = _clientService.GetClientById(id);
+                return StatusCode(response.StatusCode,response.Data);
             }
             catch (Exception ex)
             {
@@ -69,13 +69,8 @@ namespace HomeBankingMindHub.Controllers
                     return StatusCode(403, "No se encontro el usuario logeado");
                 }
                 
-                ClientDTO client = _clientService.GetClientByEmail(email);
-                if (client == null)
-                {
-                    return StatusCode(403, "No se encontro el cliente en la base de datos");
-                }
-
-                return Ok(client);
+                Response res = _clientService.GetClientByEmail(email);
+                return StatusCode(res.StatusCode,res.Data);
 
             }
             catch (Exception ex)
@@ -95,14 +90,17 @@ namespace HomeBankingMindHub.Controllers
                 {
                     return StatusCode(403, "No se encontro el usuario logeado");
                 }
+                Response res = _clientService.GetClientByEmail(email);
 
-                ClientDTO cl = _clientService.GetClientByEmail(email);
-                AccountClientDTO acc = _accountService.CreateNewAccount(cl.Id);
-                return Created("Cuenta creada con exito", acc);
-            }
-            catch(InvalidOperationException ex)
-            {
-                return StatusCode(403, ex.Message);
+                if (res.StatusCode == 200)
+                {
+                    ClientDTO cl = (ClientDTO)res.Data;
+                    AccountClientDTO acc = _accountService.CreateNewAccount(cl.Id);
+                    return Created("Cuenta creada con exito", acc);
+                }
+
+                return StatusCode(res.StatusCode, res.Data);
+
             }
             catch (Exception ex)
             {
@@ -122,13 +120,14 @@ namespace HomeBankingMindHub.Controllers
                     return StatusCode(403, "No se encontro el usuario logeado");
                 }
 
-                ClientDTO cl = _clientService.GetClientByEmail(email);
+                Response res = _clientService.GetClientByEmail(email);
+                if (res.StatusCode != 200)
+                {
+                    return StatusCode(res.StatusCode, res.Data);
+                }
+                ClientDTO cl = (ClientDTO) res.Data;
                 CardDTO ca = _cardService.CreateCard(NewCard, cl.Id, cl.FirstName + cl.LastName);
                 return Created("Card created correctly", ca);
-            }
-            catch(NullReferenceException ex)
-            {
-                return StatusCode(403, ex.Message);
             }
             catch (Exception ex)
             {
@@ -142,13 +141,13 @@ namespace HomeBankingMindHub.Controllers
         {
             try
             {
-                Client cl = _clientService.CreateClient(SignedClient);
-                AccountClientDTO ac = _accountService.CreateNewAccount(cl.Id);
-                return StatusCode(201, new ClientAccountDTO(cl,ac));
-            }
-            catch (InvalidOperationException ex)
-            {
-                return StatusCode(403, ex.Message);
+                Response res = _clientService.CreateClient(SignedClient);
+                if (res.StatusCode == 201) {
+                    Client cl = (Client) res.Data;
+                    AccountClientDTO ac = _accountService.CreateNewAccount(cl.Id);
+                    return StatusCode(201, new ClientAccountDTO(cl, ac));
+                }
+                return StatusCode(res.StatusCode, res.Data);
             }
             catch (Exception ex)
             {

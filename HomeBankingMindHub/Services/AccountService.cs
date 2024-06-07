@@ -21,7 +21,6 @@ namespace HomeBankingMindHub.Services
                 acNumber = new Random().Next(1000, 100000000).ToString();
             } while (_accountRepository.FindByAccountNumber(acNumber) != null);
             return acNumber;
-            
         }
 
         public AccountClientDTO CreateNewAccount(long clientID)

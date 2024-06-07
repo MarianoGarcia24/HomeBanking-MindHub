@@ -2,6 +2,7 @@
 using HomeBankingMindHub.Models;
 using HomeBankingMindHub.Repositories.Implementation;
 using HomeBankingMindHub.Repositories.Interfaces;
+using System.Net;
 
 namespace HomeBankingMindHub.Services
 {
@@ -20,12 +21,12 @@ namespace HomeBankingMindHub.Services
             return _clientRepository.GetAll().Select(c => new ClientDTO(c)).ToList();
         }
 
-        public ClientDTO GetClientByEmail(string email)
+        public Response GetClientByEmail(string email)
         {
             Client cl = _clientRepository.FindByEmail(email);
             if (cl == null) 
-                throw new NullReferenceException("El cliente no existe en la base de datos");
-            return new ClientDTO(cl);
+                return new Response(System.Net.HttpStatusCode.NotFound,"El cliente no existe en la base de datos");
+            return new Response(System.Net.HttpStatusCode.OK, new ClientDTO(cl));
         }
 
         private Client FindClientByEmail (string email) 
@@ -38,12 +39,12 @@ namespace HomeBankingMindHub.Services
         }
 
 
-        public ClientDTO GetClientById(long clientId)
+        public Response GetClientById(long clientId)
         {
             Client cl = _clientRepository.FindById(clientId);
             if (cl == null)
-                throw new NullReferenceException("No existe el cliente solicitado");
-            return new ClientDTO(cl);
+                return new Response(System.Net.HttpStatusCode.BadRequest, "No se encontro el cliente solicitado");
+            return new Response(System.Net.HttpStatusCode.OK,new ClientDTO(cl));
         }
 
         private bool ValidateEntries(ClientSignUpDTO signUpDTO)
@@ -62,14 +63,14 @@ namespace HomeBankingMindHub.Services
         }
 
 
-        public Client CreateClient(ClientSignUpDTO signUpDTO)
+        public Response CreateClient(ClientSignUpDTO signUpDTO)
         {
             //Valido los datos de entrada
             if (!ValidateEntries(signUpDTO))
-                throw new ArgumentException("Datos de creacion invalidos. Corrija los errores y reintente nuevamente");
+                return new Response(HttpStatusCode.BadRequest,"Datos de creacion invalidos. Corrija los errores y reintente nuevamente");
             //Valido si el email no esta en uso
             if (!ValidateEmail(signUpDTO.Email))
-                throw new InvalidOperationException("El mail ya se encuentra en uso. Pruebe con uno nuevo");
+                return new Response(HttpStatusCode.Forbidden,"El mail ya se encuentra en uso. Pruebe con uno nuevo");
            
             //Lo creo
             Client cl = new Client
@@ -82,7 +83,7 @@ namespace HomeBankingMindHub.Services
             //Llamo al repositorio para guardarlo
             SaveClient(cl);
             cl = FindClientByEmail(cl.Email);
-            return cl;
+            return new Response(HttpStatusCode.Created,cl);
         }
 
         public void SaveClient(Client client)
@@ -90,11 +91,12 @@ namespace HomeBankingMindHub.Services
             _clientRepository.Save(client);
         }
 
-        public void ValidateCredentials(ClientLoginDTO clientLoginDTO)
+        public Response ValidateCredentials(ClientLoginDTO clientLoginDTO)
         {
             Client cl = FindClientByEmail(clientLoginDTO.Email);
             if (cl == null || !String.Equals(clientLoginDTO.Password, cl.Password))
-                throw new InvalidOperationException("Contraseña incorrecta");
+                return  new Response(HttpStatusCode.Unauthorized,("Credenciales invalidas"));
+            return new Response(HttpStatusCode.OK,cl);  
         }
     }
 }

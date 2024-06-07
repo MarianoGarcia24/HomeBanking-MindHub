@@ -9,7 +9,7 @@ namespace HomeBankingMindHub.Services
         void SaveAccount(Account account);
         IEnumerable <Account> GetAllAccounts();
         Account GetAccountById(long id);
-        Account CreateNewAccount(long clientID);
+        AccountClientDTO CreateNewAccount(long clientID);
         IEnumerable<AccountDTO> GetAllAccountDTOs();
         AccountDTO GetAccountDTOById(long id);
     }

@@ -14,16 +14,16 @@ namespace HomeBankingMindHub.Services
         {
             _cardRepository = cardRepository;
         }
-        public Card GetCardByNumber(string Number)
+        public CardDTO GetCardByNumber(string Number)
         {
             Card ca = _cardRepository.FindByNumber(Number);
             if (ca!=null) throw new NullReferenceException();
-            return ca;
+            return new CardDTO(ca);
         }
 
-        public IEnumerable<Card> GetCardsByOwner(long Id)
+        public IEnumerable<CardDTO> GetCardsByOwner(long Id)
         {
-            IEnumerable<Card> ca = _cardRepository.FindCardsByOwner(Id);
+            IEnumerable<CardDTO> ca = _cardRepository.FindCardsByOwner(Id).Select(c => new CardDTO(c)).ToList();
             if (ca==null)
                 throw new NullReferenceException();
             return ca;
@@ -46,19 +46,25 @@ namespace HomeBankingMindHub.Services
             return cardNumber;
         }
 
-        public Card CreateCard(NewCardDTO NewCard, long clientID, string CardHolder)
+
+        public CardDTO CreateCard(NewCardDTO NewCard, long clientID, string CardHolder)
         {
             if (NewCard.Type.IsNullOrEmpty() || NewCard.Color.IsNullOrEmpty())
             {
                 throw new NullReferenceException("La tarjeta no posee color o tipo");
             }
-            if (_cardRepository.FindCardsByOwner(clientID).Count() == 6)
+            IEnumerable<Card> cards = _cardRepository.FindCardsByOwner(clientID);
+            if (cards.Count() == 6)
             {
                 throw new Exception("El cliente tiene el maximo de tarjetas alcanzadas, no puede crear nuevas.");
             }
 
+            CardType newCardType = (CardType)Enum.Parse(typeof(CardType), NewCard.Type);
+
+            if (cards.Count(c => c.Type == newCardType) > 2)
+                throw new Exception("El cliente ya tiene 3 tarjetas del imsmo tipo");
+
             string cardNumber = generateNewCardNumber();
-            var newCardType = (CardType)Enum.Parse(typeof(CardType), NewCard.Type);
             Card ca = new Card()
             {
                 ClientId = clientID,
@@ -71,7 +77,8 @@ namespace HomeBankingMindHub.Services
                 Number = cardNumber
             };
             SaveCard(ca);
-            return ca;
+            CardDTO AuxCard = new CardDTO(_cardRepository.FindByNumber(cardNumber));
+            return AuxCard;
         }
 
 

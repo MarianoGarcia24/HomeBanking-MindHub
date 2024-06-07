@@ -15,25 +15,35 @@ namespace HomeBankingMindHub.Services
         }
 
 
-        public IEnumerable<Client> GetAll()
+        public IEnumerable<ClientDTO> GetAll()
         {
-            return _clientRepository.GetAll();
+            return _clientRepository.GetAll().Select(c => new ClientDTO(c)).ToList();
         }
 
-        public Client GetClientByEmail(string email)
+        public ClientDTO GetClientByEmail(string email)
         {
             Client cl = _clientRepository.FindByEmail(email);
             if (cl == null) 
                 throw new NullReferenceException("El cliente no existe en la base de datos");
-            return cl;
+            return new ClientDTO(cl);
         }
 
-        public Client GetClientById(long clientId)
+        private Client FindClientByEmail (string email) 
+        {
+            Client cl = _clientRepository.FindByEmail(email);
+            if (cl == null)
+                throw new NullReferenceException("El cliente no existe en la base de datos");
+            return cl;
+
+        }
+
+
+        public ClientDTO GetClientById(long clientId)
         {
             Client cl = _clientRepository.FindById(clientId);
             if (cl == null)
                 throw new NullReferenceException("No existe el cliente solicitado");
-            return cl;
+            return new ClientDTO(cl);
         }
 
         private bool ValidateEntries(ClientSignUpDTO signUpDTO)
@@ -71,6 +81,7 @@ namespace HomeBankingMindHub.Services
             };
             //Llamo al repositorio para guardarlo
             SaveClient(cl);
+            cl = FindClientByEmail(cl.Email);
             return cl;
         }
 
@@ -81,7 +92,7 @@ namespace HomeBankingMindHub.Services
 
         public void ValidateCredentials(ClientLoginDTO clientLoginDTO)
         {
-            Client cl = GetClientByEmail(clientLoginDTO.Email);
+            Client cl = FindClientByEmail(clientLoginDTO.Email);
             if (cl == null || !String.Equals(clientLoginDTO.Password, cl.Password))
                 throw new InvalidOperationException("Contraseña incorrecta");
         }

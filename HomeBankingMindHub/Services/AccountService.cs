@@ -24,7 +24,7 @@ namespace HomeBankingMindHub.Services
             
         }
 
-        public Account CreateNewAccount(long clientID)
+        public AccountClientDTO CreateNewAccount(long clientID)
         {
             var clAccounts = GetAccountsByClient(clientID);
             if (clAccounts.Count() == 3)
@@ -40,7 +40,8 @@ namespace HomeBankingMindHub.Services
                 CreationDate = DateTime.Now,
             };
             SaveAccount(acc);
-            return acc;
+            Account acc2 = _accountRepository.FindByAccountNumber(acc.Number);
+            return new AccountClientDTO(acc2);
         }
 
         public Account GetAccountById(long id)

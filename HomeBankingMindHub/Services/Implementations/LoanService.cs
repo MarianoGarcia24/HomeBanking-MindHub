@@ -33,7 +33,7 @@ namespace HomeBankingMindHub.Services.Implementations
         {
 
             Loan loan = _loanRepository.FindById(NewLoan.LoanId);
-            Account account = _accountRepository.FindByAccountNumber(NewLoan.FromAccountNumber);
+            Account account = _accountRepository.FindByAccountNumber(NewLoan.ToAccountNumber);
             Client client = _clientRepository.FindByEmail(email);
 
             if (NewLoan.Payments.IsNullOrEmpty() || NewLoan.Amount == 0)
@@ -61,8 +61,9 @@ namespace HomeBankingMindHub.Services.Implementations
 
                 if (res.StatusCode == 200)
                 {
-                    Account acc = _accountRepository.FindByAccountNumber(NewLoan.FromAccountNumber)
+                    Account acc = _accountRepository.FindByAccountNumber(NewLoan.ToAccountNumber);
                     Client cl = _clientRepository.FindByEmail(email);
+                    Loan loan = _loanRepository.FindById(NewLoan.LoanId);
 
                     Transaction tr = new()
                     {
@@ -86,9 +87,17 @@ namespace HomeBankingMindHub.Services.Implementations
                         Payments = NewLoan.Payments,
                     };
 
+
                     _clientLoanRepository.Save(cloan);
 
-                    res = new Response(HttpStatusCode.OK, new ClientLoanDTO(cloan));
+                    res = new Response(HttpStatusCode.OK, new ClientLoanDTO()
+                    {
+                        Amount = cloan.Amount,
+                        LoanId = NewLoan.LoanId,
+                        Name = loan.Name,
+                        Payments = int.Parse(NewLoan.Payments)
+
+                    });
                 }
 
                 return res;

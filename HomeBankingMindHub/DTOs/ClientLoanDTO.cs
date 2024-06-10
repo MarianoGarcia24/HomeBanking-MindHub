@@ -18,5 +18,10 @@ namespace HomeBankingMindHub.DTOs
             LoanId = cl.LoanId; 
         }
 
+        public ClientLoanDTO()
+        {
+         
+        }
+
     }
 }

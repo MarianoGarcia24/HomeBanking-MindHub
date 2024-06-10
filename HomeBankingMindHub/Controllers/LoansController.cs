@@ -8,6 +8,8 @@ using System.Net;
 
 namespace HomeBankingMindHub.Controllers
 {
+    [Route("api/[controller]")]
+    [ApiController]
     public class LoansController : ControllerBase
     {
         private readonly ILoanService _loanService;
@@ -45,11 +47,12 @@ namespace HomeBankingMindHub.Controllers
                 if (res.StatusCode == 200) {
                     res = _loanService.CreateNewLoan(NewLoan,email);
                 }
+                return StatusCode(res.StatusCode,res.Data);
                 
             }
             catch (Exception ex)
             {
-
+                return StatusCode(500,ex.Message);
             }
         }
     }

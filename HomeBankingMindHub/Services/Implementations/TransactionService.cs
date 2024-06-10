@@ -24,6 +24,58 @@ namespace HomeBankingMindHub.Services.Implementations
             _transactionRepository = transactionRepository;
         }
 
+        
+
+        public Response CreateNewTransaction(NewTransactionDTO NewTransaction)
+        {
+            Response res = ValidateParameters(NewTransaction);
+            if (res.StatusCode != 200)
+            {
+                return res;
+            }
+            long accountId;
+
+            Transaction FromTransaction = createTransactionObject(NewTransaction.FromAccountNumber, -NewTransaction.Amount,
+                                        "Transferencia a cuenta " + NewTransaction.ToAccountNumber + ": "
+                                         + NewTransaction.Description,
+                                        "DEBIT");
+
+            _transactionRepository.Save(FromTransaction);
+
+            //No hago error handling porque si ocurre algo aca es interno (de la bases de datos)
+
+            Transaction ToTransaction = createTransactionObject(NewTransaction.ToAccountNumber, NewTransaction.Amount,
+                                                                "Transferencia desde cuenta " + NewTransaction.FromAccountNumber + ": "
+                                                                + NewTransaction.Description, "CREDIT");
+                
+            _transactionRepository.Save(ToTransaction);
+
+            //Aca lo mismo, las cuentas se que existen por validacion previa, entonces debo continuar sin hacer error handle.
+            accountId = _accountRepository.FindByAccountNumber(NewTransaction.ToAccountNumber).Id;
+
+            Account ToAccount = _accountRepository.FindById(accountId);
+            ToAccount.Balance += NewTransaction.Amount;
+            _accountRepository.Save(ToAccount);
+
+            accountId = _accountRepository.FindByAccountNumber(NewTransaction.FromAccountNumber).Id;
+
+            Account FromAccount = _accountRepository.FindById(accountId);
+            FromAccount.Balance -= NewTransaction.Amount;
+            _accountRepository.Save(FromAccount);
+
+            return new Response(HttpStatusCode.Created, new TransactionDTO(FromTransaction));
+        }
+
+        public Response AccountBelongToUser(string Email, string AccountNumber)
+        {
+            Client cl = _clientRepository.FindByEmail(Email);
+            if (cl == null)
+                return new Response(HttpStatusCode.Unauthorized, "El cliente no existe en la base de datos");
+            if (cl.Accounts.Count(c => String.Equals(c.Number,AccountNumber)) != 1)
+                return new Response(HttpStatusCode.Forbidden, "El numero de cuenta no esta asociado al cliente especificado");
+            return new Response(HttpStatusCode.OK);
+        }
+
         private Response ValidateAvailableAmount(string AccountNumber, double Amount)
         {
             Account acc = _accountRepository.FindByAccountNumber(AccountNumber);
@@ -47,12 +99,13 @@ namespace HomeBankingMindHub.Services.Implementations
             if (_accountRepository.FindByAccountNumber(NewTransaction.FromAccountNumber) == null)
                 return new Response(HttpStatusCode.Forbidden, "La cuenta de origen no existe. Ingrese una cuenta origen existente");
             return ValidateAvailableAmount(NewTransaction.FromAccountNumber, NewTransaction.Amount);
-            
+
         }
 
         private Transaction createTransactionObject(string AccountNumber, double Amount, string Description, string Type)
         {
             long accountId = _accountRepository.FindByAccountNumber(AccountNumber).Id;
+
             return new Transaction
             {
                 Amount = Amount,
@@ -68,66 +121,6 @@ namespace HomeBankingMindHub.Services.Implementations
             Account acc = _accountRepository.FindByAccountNumber(accountNumber);
             acc.Balance += Amount;
             _accountRepository.Save(acc);
-        }
-
-        public Response CreateNewTransaction(NewTransactionDTO NewTransaction)
-        {
-            Response res = ValidateParameters(NewTransaction);
-            if (res.StatusCode != 200)
-            {
-                return res;
-            }
-            long accountId;
-
-            accountId = _accountRepository.FindByAccountNumber(NewTransaction.FromAccountNumber).Id;
-            Account FromAccount = _accountRepository.FindById(accountId);
-            FromAccount.Balance -= NewTransaction.Amount;
-            _accountRepository.Save(FromAccount);
-
-            Transaction FromTransaction = new Transaction()
-            {
-                Amount = -NewTransaction.Amount,
-                Description = "Transferencia a cuenta " + NewTransaction.ToAccountNumber + ": "
-                                                              + NewTransaction.Description,
-                AccountId = accountId,
-                Date = DateTime.Now,
-                Type = (TransactionType)Enum.Parse(typeof(TransactionType), "DEBIT")
-            };
-            _transactionRepository.Save(FromTransaction);
-
-
-
-            accountId = _accountRepository.FindByAccountNumber(NewTransaction.ToAccountNumber).Id;
-            Account ToAccount = _accountRepository.FindById(accountId);
-            ToAccount.Balance += NewTransaction.Amount;
-            _accountRepository.Save(ToAccount);
-
-            Transaction ToTransaction = new Transaction()
-            {
-                Amount = NewTransaction.Amount,
-                Description = "Transferencia desde cuenta " + NewTransaction.FromAccountNumber + ": "
-                                                              + NewTransaction.Description,
-                AccountId = accountId,
-                Date = DateTime.Now,
-                Type = (TransactionType)Enum.Parse(typeof(TransactionType), "CREDIT")
-            };
-            _transactionRepository.Save(ToTransaction);
-
-            //No hago error handling porque si ocurre algo aca es interno (de la bases de datos)
-
-
-            //Aca lo mismo, las cuentas se que existen por validacion previa, entonces debo continuar sin hacer error handle.
-            return new Response(HttpStatusCode.Created, "New transaction created: \n" + FromTransaction);
-        }
-
-        public Response AccountBelongToUser(string Email, string AccountNumber)
-        {
-            Client cl = _clientRepository.FindByEmail(Email);
-            if (cl == null)
-                return new Response(HttpStatusCode.Unauthorized, "El cliente no existe en la base de datos");
-            if (cl.Accounts.Count(c => String.Equals(c.Number,AccountNumber)) != 1)
-                return new Response(HttpStatusCode.Forbidden, "El numero de cuenta no esta asociado al cliente especificado");
-            return new Response(HttpStatusCode.OK);
         }
 
     }

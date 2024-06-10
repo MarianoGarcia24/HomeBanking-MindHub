@@ -9,6 +9,7 @@ namespace HomeBankingMindHub.Services.Implementations
     public class AccountService : IAccountService
     {
         private readonly IAccountRepository _accountRepository;
+
         public AccountService(IAccountRepository accountRepository)
         {
             _accountRepository = accountRepository;
@@ -35,11 +36,11 @@ namespace HomeBankingMindHub.Services.Implementations
             Account acc = new Account
             {
                 Balance = 0,
-                Number = "VIN - " + acNumber,
+                Number = "VIN" + acNumber,
                 ClientID = clientID,
                 CreationDate = DateTime.Now,
             };
-            SaveAccount(acc);
+            _accountRepository.Save(acc);
             Account acc2 = _accountRepository.FindByAccountNumber(acc.Number);
             return new AccountClientDTO(acc2);
         }
@@ -64,11 +65,6 @@ namespace HomeBankingMindHub.Services.Implementations
         {
             IEnumerable<Account> accs = _accountRepository.GetAll();
             return new Response(System.Net.HttpStatusCode.OK, accs);
-        }
-
-        public void SaveAccount(Account account)
-        {
-            _accountRepository.Save(account);
         }
 
         public Response GetAccountDTOById(long id)

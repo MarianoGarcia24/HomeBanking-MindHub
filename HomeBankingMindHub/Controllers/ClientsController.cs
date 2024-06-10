@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using System.Linq;
 using System.Net;
 
@@ -113,17 +114,16 @@ namespace HomeBankingMindHub.Controllers
         {
             try
             {
-                string email = User.FindFirst("Client") != null ? User.FindFirst("Client").Value : string.Empty;
-                if (email.IsNullOrEmpty())
-                {
-                    return StatusCode(403, "No se encontro el usuario logeado");
-                }
-                Response res = _clientService.GetClientByEmail(email);
+                Response res = GetClientEmail();
                 if (res.StatusCode == 200)
                 {
-                    ClientDTO cl = (ClientDTO)res.Data;
-                    AccountClientDTO acc = _accountService.CreateNewAccount(cl.Id);
-                    return Created("Cuenta creada con exito", acc);
+                    res = _clientService.GetClientByEmail((string)res.Data);
+                    if (res.StatusCode == 200)
+                    {
+                        ClientDTO cl = (ClientDTO)res.Data;
+                        Response newResponse = _clientService.CreateNewAccount(cl.Id);
+                        return StatusCode(newResponse.StatusCode, newResponse.Data);
+                    }
                 }
                 return StatusCode(res.StatusCode, res.Data);
             }
@@ -139,18 +139,12 @@ namespace HomeBankingMindHub.Controllers
         {
             try
             {
-                string email = User.FindFirst("Client") != null ? User.FindFirst("Client").Value : string.Empty;
-                if (email.IsNullOrEmpty())
-                {
-                    return StatusCode(403, "No se encontro el usuario logeado");
-                }
-
-                Response res = _clientService.GetClientByEmail(email);
+                Response res = GetClientEmail();
                 if (res.StatusCode == 200)
                 {
-                    ClientDTO cl = (ClientDTO)res.Data;
-                    CardDTO ca = _cardService.CreateCard(NewCard, cl.Id, cl.FirstName + cl.LastName);
-                    return Created("Card created correctly", ca);
+                    Response newResponse;
+                    newResponse = _clientService.CreateNewCard((string)res.Data, NewCard);
+                    return StatusCode(newResponse.StatusCode,newResponse.Data);
                 }
                 return StatusCode(res.StatusCode, res.Data);
 
@@ -168,11 +162,6 @@ namespace HomeBankingMindHub.Controllers
             try
             {
                 Response res = _clientService.CreateClient(SignedClient);
-                if (res.StatusCode == 201) {
-                    Client cl = (Client) res.Data;
-                    AccountClientDTO ac = _accountService.CreateNewAccount(cl.Id);
-                    return StatusCode(201, new ClientAccountDTO(cl, ac));
-                }
                 return StatusCode(res.StatusCode, res.Data);
             }
             catch (Exception ex)

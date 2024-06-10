@@ -4,6 +4,8 @@ using HomeBankingMindHub.Models.utils;
 using HomeBankingMindHub.Repositories.Interfaces;
 using HomeBankingMindHub.Services.Interfaces;
 using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Text.RegularExpressions;
 
 namespace HomeBankingMindHub.Services.Implementations
 {
@@ -39,10 +41,14 @@ namespace HomeBankingMindHub.Services.Implementations
         private string generateNewCardNumber()
         {
             string cardNumber;
+            Random random = new Random();
             do
             {
-                cardNumber = new Random().NextInt64(1000000000000000, 9999999999999999).ToString();
-                cardNumber = System.Text.RegularExpressions.Regex.Replace(cardNumber, ".{4}", "$0");
+                cardNumber = new Random().Next(1000, 10000).ToString();
+                for (var i = 0; i < 3; i++)
+                {
+                    cardNumber = cardNumber + "-" + random.Next(1000, 10000).ToString();
+                }
             } while (_cardRepository.FindByNumber(cardNumber) != null);
             return cardNumber;
         }

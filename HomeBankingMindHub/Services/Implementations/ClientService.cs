@@ -1,8 +1,10 @@
 ﻿using HomeBankingMindHub.DTOs;
 using HomeBankingMindHub.Models;
+using HomeBankingMindHub.Models.utils;
 using HomeBankingMindHub.Repositories.Implementation;
 using HomeBankingMindHub.Repositories.Interfaces;
 using HomeBankingMindHub.Services.Interfaces;
+using Microsoft.IdentityModel.Tokens;
 using System.Net;
 
 namespace HomeBankingMindHub.Services.Implementations
@@ -11,11 +13,13 @@ namespace HomeBankingMindHub.Services.Implementations
     {
         private readonly IClientRepository _clientRepository;
         private readonly IAccountRepository _accountRepository;
+        private readonly ICardRepository _cardRepository;
 
-        public ClientService(IClientRepository clientRepository, IAccountRepository accountRepository)
+        public ClientService(IClientRepository clientRepository, IAccountRepository accountRepository, ICardRepository cardRepository)
         {
             _clientRepository = clientRepository;
             _accountRepository = accountRepository;
+            _cardRepository = cardRepository;
         }
 
 
@@ -65,6 +69,15 @@ namespace HomeBankingMindHub.Services.Implementations
             return true;
         }
 
+        private string GenerateNewAccountNumber()
+        {
+            string acNumber;
+            do
+            {
+                acNumber = new Random().Next(1000, 100000000).ToString();
+            } while (_accountRepository.FindByAccountNumber(acNumber) != null);
+            return acNumber;
+        }
 
         public Response CreateClient(ClientSignUpDTO signUpDTO)
         {
@@ -83,10 +96,25 @@ namespace HomeBankingMindHub.Services.Implementations
                 FirstName = signUpDTO.FirstName,
                 LastName = signUpDTO.LastName
             };
+
             //Llamo al repositorio para guardarlo
             SaveClient(cl);
             cl = FindClientByEmail(cl.Email);
-            return new Response(HttpStatusCode.Created, cl);
+            string AccountNumber = GenerateNewAccountNumber();
+
+            Account acc = new Account
+            {
+                Balance = 0,
+                ClientID = cl.Id,
+                Number = "VIN" + AccountNumber,
+                CreationDate = DateTime.Now,
+            };
+            _accountRepository.Save(acc);
+
+            cl = FindClientByEmail(cl.Email);
+            AccountClientDTO account = new AccountClientDTO(_accountRepository.FindByAccountNumber(acc.Number));
+            return new Response(HttpStatusCode.Created, new ClientAccountDTO(cl,account));
+        
         }
 
         public void SaveClient(Client client)
@@ -112,6 +140,85 @@ namespace HomeBankingMindHub.Services.Implementations
                                                     .Select(c => new AccountDTO(c)).ToList());
             }
             return new Response(HttpStatusCode.Forbidden, "El cliente no existe en la base de datos");
+        }
+
+        public Response CreateNewAccount(long clientID)
+        {
+            var clAccounts = _accountRepository.FindAccountsByClient(clientID);
+            if (clAccounts.Count() == 3)
+            {
+                throw new InvalidOperationException("Numero de cuentas máximo alcanzado. El cliente posee 3 cuentas.");
+            }
+
+            string acNumber = GenerateNewAccountNumber();
+            Account acc = new Account
+            {
+                Balance = 0,
+                Number = "VIN" + acNumber,
+                ClientID = clientID,
+                CreationDate = DateTime.Now,
+            };
+            _accountRepository.Save(acc);
+            Account acc2 = _accountRepository.FindByAccountNumber(acc.Number);
+            return new Response(HttpStatusCode.Created,new AccountDTO(acc2));
+        }
+
+        public Response CreateNewCard(string email, NewCardDTO NewCard)
+        {
+            if (!email.IsNullOrEmpty())
+            {
+                Client cl = FindClientByEmail(email);
+                if (cl != null)
+                {
+                    if (NewCard.Type.IsNullOrEmpty() || NewCard.Color.IsNullOrEmpty())
+                    {
+                        return new Response(HttpStatusCode.Forbidden,"La tarjeta no posee color o tipo");
+                    }
+                    IEnumerable<Card> cards = _cardRepository.FindCardsByOwner(cl.Id);
+
+                    if (cards.Count() == 6)
+                    {
+                        return new Response(HttpStatusCode.Forbidden, "El cliente no puede tener mas de 6 tarjetas");
+                    }
+
+                    CardType newCardType = (CardType)Enum.Parse(typeof(CardType), NewCard.Type);
+                    if (cards.Count(c => c.Type == newCardType) > 2)
+                        return new Response(HttpStatusCode.Forbidden,"El cliente ya tiene 3 tarjetas del mismo tipo");
+
+                    string cardNumber = generateNewCardNumber();
+                    Card ca = new Card()
+                    {
+                        ClientId = cl.Id,
+                        CardHolder = cl.FirstName + " " + cl.LastName,
+                        FromDate = DateTime.Now,
+                        ThruDate = DateTime.Now.AddYears(5),
+                        Type = newCardType,
+                        Color = (ColorType)Enum.Parse(typeof(ColorType), NewCard.Color),
+                        CVV = new Random().Next(000, 999),
+                        Number = cardNumber
+                    };
+                    _cardRepository.Save(ca);
+                    CardDTO AuxCard = new CardDTO(_cardRepository.FindByNumber(cardNumber));
+                    return new Response(HttpStatusCode.Created,AuxCard);
+
+                }
+            }
+            return new Response(HttpStatusCode.Forbidden,"El mail es invalido");
+        }
+
+        private string generateNewCardNumber()
+        {
+            string cardNumber;
+            Random random = new Random();
+            do
+            {
+                cardNumber = new Random().Next(1000, 10000).ToString();
+                for (var i = 0; i < 3; i++)
+                {
+                    cardNumber = cardNumber + " " + random.Next(1000, 10000).ToString();
+                }
+            } while (_cardRepository.FindByNumber(cardNumber) != null);
+            return cardNumber;
         }
     }
 }

@@ -25,6 +25,7 @@ namespace HomeBankingMindHub.Repositories.Implementation
         {
             Create(transaction);
             SaveChanges();
+            RepositoryContext.ChangeTracker.Clear();
         }
 
     }

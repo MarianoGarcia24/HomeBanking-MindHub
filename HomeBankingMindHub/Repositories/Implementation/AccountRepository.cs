@@ -19,7 +19,7 @@ namespace HomeBankingMindHub.Repositories.Implementation
 
         public Account FindByAccountNumber(string accountNumber)
         {
-            return FindByCondition(acc => String.Equals(accountNumber, acc.Number))
+            return FindByCondition(acc => string.Equals(accountNumber.ToUpper(), acc.Number.ToUpper()))
                 .Include(acc => acc.Transactions)
                 .FirstOrDefault();
                  

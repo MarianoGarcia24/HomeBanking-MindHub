@@ -15,36 +15,6 @@ namespace HomeBankingMindHub.Services.Implementations
             _accountRepository = accountRepository;
         }
 
-        public string GenerateNewAccountNumber()
-        {
-            string acNumber;
-            do
-            {
-                acNumber = new Random().Next(1000, 100000000).ToString();
-            } while (_accountRepository.FindByAccountNumber(acNumber) != null);
-            return acNumber;
-        }
-
-        public AccountClientDTO CreateNewAccount(long clientID)
-        {
-            var clAccounts = GetAccountsByClient(clientID);
-            if (clAccounts.Count() == 3)
-            {
-                throw new InvalidOperationException("Numero de cuentas máximo alcanzado. El cliente posee 3 cuentas.");
-            }
-            string acNumber = GenerateNewAccountNumber();
-            Account acc = new Account
-            {
-                Balance = 0,
-                Number = "VIN" + acNumber,
-                ClientID = clientID,
-                CreationDate = DateTime.Now,
-            };
-            _accountRepository.Save(acc);
-            Account acc2 = _accountRepository.FindByAccountNumber(acc.Number);
-            return new AccountClientDTO(acc2);
-        }
-
         private Response GetAccountById(long id)
         {
             Account ac = _accountRepository.FindById(id);
@@ -53,12 +23,6 @@ namespace HomeBankingMindHub.Services.Implementations
                 return new Response(System.Net.HttpStatusCode.NotFound, "No se encontro la cuenta solicitada: " + id);
             }
             return new Response(System.Net.HttpStatusCode.OK, ac);
-        }
-
-        public IEnumerable<Account> GetAccountsByClient(long id)
-        {
-            IEnumerable<Account> accs = _accountRepository.FindAccountsByClient(id);
-            return accs;
         }
 
         public Response GetAllAccounts()

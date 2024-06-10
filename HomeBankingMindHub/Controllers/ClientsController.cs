@@ -73,15 +73,10 @@ namespace HomeBankingMindHub.Controllers
             {
                 //El cliente guarda la cookie con los datos de su peticion en el navegador
                 //Aca preguntamos para que la encueuntre, y si la tiene devuelve el value.
-                string email = User.FindFirst("Client") != null ? User.FindFirst("Client").Value : string.Empty;
-                if (email.IsNullOrEmpty())
-                {
-                    return StatusCode(403, "No se encontro el usuario logeado");
-                }
-                
-                Response res = _clientService.GetClientByEmail(email);
+                Response res = GetClientEmail();
+                if (res.StatusCode==200)
+                     res = _clientService.GetClientByEmail((string)res.Data);
                 return StatusCode(res.StatusCode,res.Data);
-
             }
             catch (Exception ex)
             {
@@ -117,11 +112,8 @@ namespace HomeBankingMindHub.Controllers
                 Response res = GetClientEmail();
                 if (res.StatusCode == 200)
                 {
-                    if (res.StatusCode == 200)
-                    {
-                        res = _clientService.CreateNewAccount((string)res.Data);
-                        return StatusCode(res.StatusCode, res.Data);
-                    }
+                      res = _clientService.CreateNewAccount((string)res.Data);
+                      return StatusCode(res.StatusCode, res.Data);
                 }
                 return StatusCode(res.StatusCode, res.Data);
             }

@@ -28,8 +28,10 @@ namespace HomeBankingMindHub.Controllers
             try
             {
                 Response res = _clientService.ValidateCredentials(client);
+
                 if (res.StatusCode != 200)
                     return StatusCode(res.StatusCode, res.Data);
+
                 var claims = new List<Claim>
                 {
                     new Claim("Client", client.Email)

@@ -6,6 +6,8 @@ using HomeBankingMindHub.Repositories.Interfaces;
 using HomeBankingMindHub.Services.Interfaces;
 using Microsoft.IdentityModel.Tokens;
 using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace HomeBankingMindHub.Services.Implementations
 {
@@ -92,7 +94,7 @@ namespace HomeBankingMindHub.Services.Implementations
             Client cl = new Client
             {
                 Email = signUpDTO.Email,
-                Password = signUpDTO.Password,
+                Password = GetHashCode(signUpDTO.Password),
                 FirstName = signUpDTO.FirstName,
                 LastName = signUpDTO.LastName
             };
@@ -122,11 +124,37 @@ namespace HomeBankingMindHub.Services.Implementations
             _clientRepository.Save(client);
         }
 
+        private static string GetHashCode(string Password)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] data = sha256.ComputeHash(Encoding.UTF8.GetBytes(Password));
+
+                string sBuilder = Convert.ToBase64String(data);
+
+                return sBuilder;
+            }
+        }
+
+        private bool VerifyPassword(string Input, string ClientDBPassword)
+        {
+            if (string.IsNullOrEmpty(Input))
+                return false;
+
+            string HashedPassword = GetHashCode(Input);
+            return string.Equals(ClientDBPassword.ToLower(), HashedPassword.ToLower());
+        }
+
         public Response ValidateCredentials(ClientLoginDTO clientLoginDTO)
         {
             Client cl = FindClientByEmail(clientLoginDTO.Email);
-            if (cl == null || !string.Equals(clientLoginDTO.Password, cl.Password))
+            if (cl == null)
                 return new Response(HttpStatusCode.Unauthorized, "Credenciales invalidas");
+
+            if (!VerifyPassword(clientLoginDTO.Password, cl.Password))
+                return new Response(HttpStatusCode.Unauthorized, "La contraseña es incorrecta. Reintente nuvamente");
+                //check password with sha256    
+
             return new Response(HttpStatusCode.OK, cl);
         }
 

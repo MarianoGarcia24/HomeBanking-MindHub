@@ -117,12 +117,10 @@ namespace HomeBankingMindHub.Controllers
                 Response res = GetClientEmail();
                 if (res.StatusCode == 200)
                 {
-                    res = _clientService.GetClientByEmail((string)res.Data);
                     if (res.StatusCode == 200)
                     {
-                        ClientDTO cl = (ClientDTO)res.Data;
-                        Response newResponse = _clientService.CreateNewAccount(cl.Id);
-                        return StatusCode(newResponse.StatusCode, newResponse.Data);
+                        res = _clientService.CreateNewAccount((string)res.Data);
+                        return StatusCode(res.StatusCode, res.Data);
                     }
                 }
                 return StatusCode(res.StatusCode, res.Data);
@@ -142,9 +140,8 @@ namespace HomeBankingMindHub.Controllers
                 Response res = GetClientEmail();
                 if (res.StatusCode == 200)
                 {
-                    Response newResponse;
-                    newResponse = _clientService.CreateNewCard((string)res.Data, NewCard);
-                    return StatusCode(newResponse.StatusCode,newResponse.Data);
+                    res = _clientService.CreateNewCard((string)res.Data, NewCard);
+                    return StatusCode(res.StatusCode,res.Data);
                 }
                 return StatusCode(res.StatusCode, res.Data);
 

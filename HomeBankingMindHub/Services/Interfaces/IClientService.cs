@@ -11,7 +11,7 @@ namespace HomeBankingMindHub.Services.Interfaces
         Response CreateClient(ClientSignUpDTO signUpDTO);
         Response ValidateCredentials(ClientLoginDTO clientLoginDTO);
         Response GetAccountsByClient(string email);
-        Response CreateNewAccount(long Id);
+        Response CreateNewAccount(string email);
         Response CreateNewCard(string email, NewCardDTO newCardDTO);
 
     }

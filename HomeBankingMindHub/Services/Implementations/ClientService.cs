@@ -142,9 +142,10 @@ namespace HomeBankingMindHub.Services.Implementations
             return new Response(HttpStatusCode.Forbidden, "El cliente no existe en la base de datos");
         }
 
-        public Response CreateNewAccount(long clientID)
+        public Response CreateNewAccount(string email)
         {
-            var clAccounts = _accountRepository.FindAccountsByClient(clientID);
+            Client cl = _clientRepository.FindByEmail(email);
+            var clAccounts = _accountRepository.FindAccountsByClient(cl.Id);
             if (clAccounts.Count() == 3)
             {
                 throw new InvalidOperationException("Numero de cuentas máximo alcanzado. El cliente posee 3 cuentas.");
@@ -155,7 +156,7 @@ namespace HomeBankingMindHub.Services.Implementations
             {
                 Balance = 0,
                 Number = "VIN" + acNumber,
-                ClientID = clientID,
+                ClientID = cl.Id,
                 CreationDate = DateTime.Now,
             };
             _accountRepository.Save(acc);

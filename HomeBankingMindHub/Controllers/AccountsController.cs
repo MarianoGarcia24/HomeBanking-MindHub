@@ -35,7 +35,7 @@ namespace HomeBankingMindHub.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Policy = "AdminOnly")]
+        [Authorize(Policy = "ClientOnly")]
         public IActionResult Get(int id)
         {
             try

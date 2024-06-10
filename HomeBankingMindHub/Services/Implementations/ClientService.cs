@@ -10,10 +10,12 @@ namespace HomeBankingMindHub.Services.Implementations
     public class ClientService : IClientService
     {
         private readonly IClientRepository _clientRepository;
+        private readonly IAccountRepository _accountRepository;
 
-        public ClientService(IClientRepository clientRepository)
+        public ClientService(IClientRepository clientRepository, IAccountRepository accountRepository)
         {
             _clientRepository = clientRepository;
+            _accountRepository = accountRepository;
         }
 
 
@@ -98,6 +100,18 @@ namespace HomeBankingMindHub.Services.Implementations
             if (cl == null || !string.Equals(clientLoginDTO.Password, cl.Password))
                 return new Response(HttpStatusCode.Unauthorized, "Credenciales invalidas");
             return new Response(HttpStatusCode.OK, cl);
+        }
+
+        public Response GetAccountsByClient(string email)
+        {
+            Client cl = _clientRepository.FindByEmail(email);
+            if (cl != null)
+            {
+                return new Response(HttpStatusCode.OK,_accountRepository
+                                                    .FindAccountsByClient(cl.Id)
+                                                    .Select(c => new AccountDTO(c)).ToList());
+            }
+            return new Response(HttpStatusCode.Forbidden, "El cliente no existe en la base de datos");
         }
     }
 }

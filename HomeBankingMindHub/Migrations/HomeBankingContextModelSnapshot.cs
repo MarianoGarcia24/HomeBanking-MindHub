@@ -237,11 +237,13 @@ namespace HomeBankingMindHub.Migrations
 
             modelBuilder.Entity("HomeBankingMindHub.Models.Transaction", b =>
                 {
-                    b.HasOne("HomeBankingMindHub.Models.Account", null)
+                    b.HasOne("HomeBankingMindHub.Models.Account", "Account")
                         .WithMany("Transactions")
                         .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("HomeBankingMindHub.Models.Account", b =>

@@ -10,6 +10,8 @@ namespace HomeBankingMindHub.Services.Interfaces
         Response GetClientByEmail(string email);
         Response CreateClient(ClientSignUpDTO signUpDTO);
         Response ValidateCredentials(ClientLoginDTO clientLoginDTO);
+        Response GetAccountsByClient(string email);
+
 
     }
 }

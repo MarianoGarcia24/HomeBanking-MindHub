@@ -2,22 +2,26 @@
 using HomeBankingMindHub.Models;
 using HomeBankingMindHub.Models.utils;
 using HomeBankingMindHub.Repositories.Implementation;
+using HomeBankingMindHub.Repositories.Interfaces;
+using HomeBankingMindHub.Services.Interfaces;
+using Microsoft.IdentityModel.Tokens;
 using System.Net;
 
 namespace HomeBankingMindHub.Services.Implementations
 {
-    public class TransactionService
+    public class TransactionService: ITransactionService
     {
-        private readonly AccountRepository _accountRepository;
-        private readonly ClientRepository _clientRepository;
-        private readonly TransactionRepository _transactionRepository;
-        public TransactionService(AccountRepository accountRepository, 
-                                  ClientRepository clientRepository, 
-                                  TransactionRepository transaction)
+        private readonly IAccountRepository _accountRepository;
+        private readonly IClientRepository _clientRepository;
+        private readonly ITransactionRepository _transactionRepository;
+        public TransactionService(ITransactionRepository transactionRepository,
+                                  IAccountRepository accountRepository, 
+                                  IClientRepository clientRepository
+                                  )
         {
             _accountRepository = accountRepository;
             _clientRepository = clientRepository;
-            _transactionRepository = transaction;
+            _transactionRepository = transactionRepository;
         }
 
         private Response ValidateAvailableAmount(string AccountNumber, double Amount)
@@ -33,29 +37,37 @@ namespace HomeBankingMindHub.Services.Implementations
 
         private Response ValidateParameters(NewTransactionDTO NewTransaction)
         {
-            if (NewTransaction.Amount == null || NewTransaction.Amount == null
-                || NewTransaction.ToAccount == null || NewTransaction.ToAccount == null)
+            if (NewTransaction.Amount == 0 || NewTransaction.Description.IsNullOrEmpty()
+                || NewTransaction.ToAccountNumber.IsNullOrEmpty() || NewTransaction.ToAccountNumber.IsNullOrEmpty())
                 return new Response(HttpStatusCode.Forbidden, "Hay uno o más parámetros nulos. Intente nuevamente");
-            if (String.Equals(NewTransaction.FromAccount, NewTransaction.ToAccount))
+            if (String.Equals(NewTransaction.FromAccountNumber, NewTransaction.ToAccountNumber))
                 return new Response(HttpStatusCode.Forbidden, "El numero de cuenta destino no puede ser igual al numero de cuenta origen");
-            if (_accountRepository.FindByAccountNumber(NewTransaction.ToAccount) == null)
+            if (_accountRepository.FindByAccountNumber(NewTransaction.ToAccountNumber) == null)
                 return new Response(HttpStatusCode.Forbidden, "La cuenta de destino no existe. Ingrese una cuenta destino existente");
-            if (_accountRepository.FindByAccountNumber(NewTransaction.FromAccount) == null)
+            if (_accountRepository.FindByAccountNumber(NewTransaction.FromAccountNumber) == null)
                 return new Response(HttpStatusCode.Forbidden, "La cuenta de origen no existe. Ingrese una cuenta origen existente");
-            return ValidateAvailableAmount(NewTransaction.FromAccount, NewTransaction.Amount);
+            return ValidateAvailableAmount(NewTransaction.FromAccountNumber, NewTransaction.Amount);
             
         }
 
         private Transaction createTransactionObject(string AccountNumber, double Amount, string Description, string Type)
         {
+            long accountId = _accountRepository.FindByAccountNumber(AccountNumber).Id;
             return new Transaction
             {
                 Amount = Amount,
                 Description = Description,
                 Date = DateTime.Now,
                 Type = (TransactionType)Enum.Parse(typeof(TransactionType), Type),
-                AccountId = AccountNumber
+                AccountId = accountId,
             };
+        }
+
+        private void UpdateAccount(string accountNumber, double Amount)
+        {
+            Account acc = _accountRepository.FindByAccountNumber(accountNumber);
+            acc.Balance += Amount;
+            _accountRepository.Save(acc);
         }
 
         public Response CreateNewTransaction(NewTransactionDTO NewTransaction)
@@ -65,13 +77,58 @@ namespace HomeBankingMindHub.Services.Implementations
             {
                 return res;
             }
-            Transaction ToTransaction = new Transaction(NewTransaction.ToAccount, NewTransaction.Amount, NewTransaction.Description,"CREDIT");
-            Transaction FromTransaction = new Transaction(NewTransaction.FromAccount, NewTransaction.Amount, NewTransaction.Description,"DEBIT");
+            long accountId;
+
+            accountId = _accountRepository.FindByAccountNumber(NewTransaction.FromAccountNumber).Id;
+            Account FromAccount = _accountRepository.FindById(accountId);
+            FromAccount.Balance -= NewTransaction.Amount;
+            _accountRepository.Save(FromAccount);
+
+            Transaction FromTransaction = new Transaction()
+            {
+                Amount = -NewTransaction.Amount,
+                Description = "Transferencia a cuenta " + NewTransaction.ToAccountNumber + ": "
+                                                              + NewTransaction.Description,
+                AccountId = accountId,
+                Date = DateTime.Now,
+                Type = (TransactionType)Enum.Parse(typeof(TransactionType), "DEBIT")
+            };
+            _transactionRepository.Save(FromTransaction);
 
 
-        
+
+            accountId = _accountRepository.FindByAccountNumber(NewTransaction.ToAccountNumber).Id;
+            Account ToAccount = _accountRepository.FindById(accountId);
+            ToAccount.Balance += NewTransaction.Amount;
+            _accountRepository.Save(ToAccount);
+
+            Transaction ToTransaction = new Transaction()
+            {
+                Amount = NewTransaction.Amount,
+                Description = "Transferencia desde cuenta " + NewTransaction.FromAccountNumber + ": "
+                                                              + NewTransaction.Description,
+                AccountId = accountId,
+                Date = DateTime.Now,
+                Type = (TransactionType)Enum.Parse(typeof(TransactionType), "CREDIT")
+            };
+            _transactionRepository.Save(ToTransaction);
+
+            //No hago error handling porque si ocurre algo aca es interno (de la bases de datos)
+
+
+            //Aca lo mismo, las cuentas se que existen por validacion previa, entonces debo continuar sin hacer error handle.
+            return new Response(HttpStatusCode.Created, "New transaction created: \n" + FromTransaction);
         }
 
+        public Response AccountBelongToUser(string Email, string AccountNumber)
+        {
+            Client cl = _clientRepository.FindByEmail(Email);
+            if (cl == null)
+                return new Response(HttpStatusCode.Unauthorized, "El cliente no existe en la base de datos");
+            if (cl.Accounts.Count(c => String.Equals(c.Number,AccountNumber)) != 1)
+                return new Response(HttpStatusCode.Forbidden, "El numero de cuenta no esta asociado al cliente especificado");
+            return new Response(HttpStatusCode.OK);
+        }
 
     }
 }

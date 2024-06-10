@@ -64,10 +64,6 @@ namespace HomeBankingMindHub.Migrations
                 table: "ClientLoans",
                 column: "LoanId");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Transactions_AccountId",
-                table: "Transactions",
-                column: "AccountId");
         }
 
         /// <inheritdoc />
@@ -75,9 +71,6 @@ namespace HomeBankingMindHub.Migrations
         {
             migrationBuilder.DropTable(
                 name: "ClientLoans");
-
-            migrationBuilder.DropTable(
-                name: "Transactions");
 
             migrationBuilder.DropTable(
                 name: "Loans");

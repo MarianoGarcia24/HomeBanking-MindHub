@@ -11,17 +11,7 @@ namespace HomeBankingMindHub.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<int>(
-                name: "Type",
-                table: "Transactions",
-                type: "int",
-                nullable: false,
-                defaultValue: 0,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(max)",
-                oldNullable: true);
-
-            migrationBuilder.CreateTable(
+           migrationBuilder.CreateTable(
                 name: "Cards",
                 columns: table => new
                 {
@@ -59,13 +49,6 @@ namespace HomeBankingMindHub.Migrations
             migrationBuilder.DropTable(
                 name: "Cards");
 
-            migrationBuilder.AlterColumn<string>(
-                name: "Type",
-                table: "Transactions",
-                type: "nvarchar(max)",
-                nullable: true,
-                oldClrType: typeof(int),
-                oldType: "int");
         }
     }
 }

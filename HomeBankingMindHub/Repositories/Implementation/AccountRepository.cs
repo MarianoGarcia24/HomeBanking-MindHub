@@ -19,7 +19,7 @@ namespace HomeBankingMindHub.Repositories.Implementation
 
         public Account FindByAccountNumber(string accountNumber)
         {
-            return FindByCondition(acc => acc.Number == accountNumber)
+            return FindByCondition(acc => String.Equals(accountNumber, acc.Number))
                 .Include(acc => acc.Transactions)
                 .FirstOrDefault();
                  
@@ -42,10 +42,14 @@ namespace HomeBankingMindHub.Repositories.Implementation
 
         public void Save(Account account)
         {
-            Create(account);
-            SaveChanges();
-        }
+            if (account.Id == 0)
+                Create(account);
+            else
+                Update(account);
 
+            SaveChanges();
+            RepositoryContext.ChangeTracker.Clear();
+        }
 
     }
 }

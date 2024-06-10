@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.Linq;
+using System.Net;
 
 namespace HomeBankingMindHub.Controllers
 {
@@ -26,6 +27,13 @@ namespace HomeBankingMindHub.Controllers
             _clientService = clientService;
             _cardService = cardService;
             _accountService = accountService;
+        }
+
+        private Response GetClientEmail() {
+            string email = User.FindFirst("Client") != null ? User.FindFirst("Client").Value : string.Empty;
+            Response res = email.IsNullOrEmpty() ? new Response(HttpStatusCode.Forbidden, "No hay cliente asociado")
+                : new Response(HttpStatusCode.OK, email);
+            return res;
         }
 
         [HttpGet]
@@ -79,6 +87,25 @@ namespace HomeBankingMindHub.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpGet("current/accounts")]
+        [Authorize(Policy = "ClientOnly")]
+        public IActionResult GetAccounts()
+        {
+            try
+            {
+                Response res = GetClientEmail();
+                if (res.StatusCode == 200)
+                {
+                    res = _clientService.GetAccountsByClient((string) res.Data);
+                }
+                return StatusCode(res.StatusCode, res.Data);
+            }
+            catch (Exception ex) {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
 
         [HttpPost("current/accounts")]
         [Authorize(Policy = "ClientOnly")]

@@ -21,9 +21,12 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<IClientRepository, ClientRepository>();
 builder.Services.AddScoped<ICardRepository, CardRepository>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<ICardService, CardService>();
+builder.Services.AddScoped<ITransactionService, TransactionService>();
 
 
 //swagger web API
@@ -45,18 +48,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
             options.ExpireTimeSpan = TimeSpan.FromSeconds(3600);
             options.LoginPath = new PathString("/index.html");
             options.SlidingExpiration = true;
-            options.Events = new CookieAuthenticationEvents
-            {
-                OnCheckSlidingExpiration = context =>
-                {
-                    if (context.Principal?.Claims.FirstOrDefault(c => c.Type == "AuthCookie") != null)
-                    {
-                        context.Response.Redirect("/index.html"); // Redirección por expiración de cookie
-                    }
-                    return Task.CompletedTask;
-                }
-            };
-
         });
 
 //Autorizacion
@@ -102,8 +93,9 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
+app.MapRazorPages();
+
 app.MapControllers();
 
-app.MapRazorPages();
 
 app.Run();

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HomeBankingMindHub.Migrations
 {
     [DbContext(typeof(HomeBankingContext))]
-    [Migration("20240531160531_RecreateCardTable")]
-    partial class RecreateCardTable
+    [Migration("20240610030439_CreateTransactions")]
+    partial class CreateTransactions
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -240,11 +240,13 @@ namespace HomeBankingMindHub.Migrations
 
             modelBuilder.Entity("HomeBankingMindHub.Models.Transaction", b =>
                 {
-                    b.HasOne("HomeBankingMindHub.Models.Account", null)
+                    b.HasOne("HomeBankingMindHub.Models.Account", "Account")
                         .WithMany("Transactions")
                         .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("HomeBankingMindHub.Models.Account", b =>

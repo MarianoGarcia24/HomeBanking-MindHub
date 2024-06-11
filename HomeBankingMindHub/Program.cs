@@ -3,12 +3,9 @@ using HomeBankingMindHub.Repositories.Implementation;
 using HomeBankingMindHub.Repositories.Interfaces;
 using HomeBankingMindHub.Services.Implementations;
 using HomeBankingMindHub.Services.Interfaces;
-using HomeBankingMindHub.utils;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,9 +31,6 @@ builder.Services.AddScoped<ICardService, CardService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<ILoanService, LoanService>();
 
-builder.Services.AddSingleton<Utilities>();
-
-
 //swagger web API
 builder.Services.AddSwaggerGen(options =>
 {
@@ -49,7 +43,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-Autenticacion
+//Autenticacion
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
         .AddCookie(options =>
         {

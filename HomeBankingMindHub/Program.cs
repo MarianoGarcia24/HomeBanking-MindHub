@@ -47,7 +47,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
         .AddCookie(options =>
         {
-            options.ExpireTimeSpan = TimeSpan.FromSeconds(3600);
+            options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
             options.LoginPath = new PathString("/index.html");
             options.SlidingExpiration = true;
         });

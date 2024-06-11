@@ -132,10 +132,9 @@ namespace HomeBankingMindHub.Controllers
                 Response res = GetClientEmail();
                 if (res.StatusCode == 200)
                 {
-                    res = _clientService.CreateNewCard((string)res.Data, NewCard);
-                    return StatusCode(res.StatusCode,res.Data);
+                    res = _cardService.CreateCard((string)res.Data, NewCard);
                 }
-                return StatusCode(res.StatusCode, res.Data);
+                return StatusCode(res.StatusCode,res.Data);
 
             }
             catch (Exception ex)

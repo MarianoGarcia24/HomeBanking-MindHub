@@ -27,7 +27,7 @@ namespace HomeBankingMindHub.Services.Implementations
 
         public Response GetAllAccounts()
         {
-            IEnumerable<Account> accs = _accountRepository.GetAll();
+            IEnumerable<AccountDTO> accs = _accountRepository.GetAll().Select(c => new AccountDTO(c));
             return new Response(System.Net.HttpStatusCode.OK, accs);
         }
 

@@ -38,6 +38,14 @@ namespace HomeBankingMindHub.Services.Implementations
             return new Response(HttpStatusCode.OK, new ClientDTO(cl));
         }
 
+        public Response GetClientById(long clientId)
+        {
+            Client cl = _clientRepository.FindById(clientId);
+            if (cl == null)
+                return new Response(HttpStatusCode.BadRequest, "No se encontro el cliente solicitado");
+            return new Response(HttpStatusCode.OK, new ClientDTO(cl));
+        }
+
         private Client FindClientByEmail(string email)
         {
             Client cl = _clientRepository.FindByEmail(email);
@@ -47,39 +55,6 @@ namespace HomeBankingMindHub.Services.Implementations
 
         }
 
-
-        public Response GetClientById(long clientId)
-        {
-            Client cl = _clientRepository.FindById(clientId);
-            if (cl == null)
-                return new Response(HttpStatusCode.BadRequest, "No se encontro el cliente solicitado");
-            return new Response(HttpStatusCode.OK, new ClientDTO(cl));
-        }
-
-        private bool ValidateEntries(ClientSignUpDTO signUpDTO)
-        {
-            if (string.IsNullOrEmpty(signUpDTO.Email) || string.IsNullOrEmpty(signUpDTO.Password) ||
-                   string.IsNullOrEmpty(signUpDTO.FirstName) || string.IsNullOrEmpty(signUpDTO.LastName))
-                return false;
-            return true;
-        }
-
-        private bool ValidateEmail(string email)
-        {
-            if (_clientRepository.FindByEmail(email) != null)
-                return false;
-            return true;
-        }
-
-        private string GenerateNewAccountNumber()
-        {
-            string acNumber;
-            do
-            {
-                acNumber = new Random().Next(1000, 100000000).ToString();
-            } while (_accountRepository.FindByAccountNumber(acNumber) != null);
-            return acNumber;
-        }
 
         public Response CreateClient(ClientSignUpDTO signUpDTO)
         {
@@ -115,34 +90,7 @@ namespace HomeBankingMindHub.Services.Implementations
 
             cl = FindClientByEmail(cl.Email);
             AccountClientDTO account = new AccountClientDTO(_accountRepository.FindByAccountNumber(acc.Number));
-            return new Response(HttpStatusCode.Created, new ClientAccountDTO(cl,account));
-        
-        }
-
-        public void SaveClient(Client client)
-        {
-            _clientRepository.Save(client);
-        }
-
-        private static string GetHashCode(string Password)
-        {
-            using (SHA256 sha256 = SHA256.Create())
-            {
-                byte[] data = sha256.ComputeHash(Encoding.UTF8.GetBytes(Password));
-
-                string sBuilder = Convert.ToBase64String(data);
-
-                return sBuilder;
-            }
-        }
-
-        private bool VerifyPassword(string Input, string ClientDBPassword)
-        {
-            if (string.IsNullOrEmpty(Input))
-                return false;
-
-            string HashedPassword = GetHashCode(Input);
-            return string.Equals(ClientDBPassword.ToLower(), HashedPassword.ToLower());
+            return new Response(HttpStatusCode.Created, new ClientAccountDTO(cl, account));
         }
 
         public Response ValidateCredentials(ClientLoginDTO clientLoginDTO)
@@ -153,9 +101,9 @@ namespace HomeBankingMindHub.Services.Implementations
 
             if (!VerifyPassword(clientLoginDTO.Password, cl.Password))
                 return new Response(HttpStatusCode.Unauthorized, "La contraseña es incorrecta. Reintente nuvamente");
-                //check password with sha256    
+            //check password with sha256    
 
-            return new Response(HttpStatusCode.OK, cl);
+            return new Response(HttpStatusCode.OK, new ClientDTO(cl));
         }
 
         public Response GetAccountsByClient(string email)
@@ -163,7 +111,7 @@ namespace HomeBankingMindHub.Services.Implementations
             Client cl = _clientRepository.FindByEmail(email);
             if (cl != null)
             {
-                return new Response(HttpStatusCode.OK,_accountRepository
+                return new Response(HttpStatusCode.OK, _accountRepository
                                                     .FindAccountsByClient(cl.Id)
                                                     .Select(c => new AccountDTO(c)).ToList());
             }
@@ -189,65 +137,64 @@ namespace HomeBankingMindHub.Services.Implementations
             };
             _accountRepository.Save(acc);
             Account acc2 = _accountRepository.FindByAccountNumber(acc.Number);
-            return new Response(HttpStatusCode.Created,new AccountDTO(acc2));
+            return new Response(HttpStatusCode.Created, new AccountDTO(acc2));
         }
 
-        public Response CreateNewCard(string email, NewCardDTO NewCard)
+         public void SaveClient(Client client)
         {
-            if (!email.IsNullOrEmpty())
-            {
-                Client cl = FindClientByEmail(email);
-                if (cl != null)
-                {
-                    if (NewCard.Type.IsNullOrEmpty() || NewCard.Color.IsNullOrEmpty())
-                    {
-                        return new Response(HttpStatusCode.Forbidden,"La tarjeta no posee color o tipo");
-                    }
-                    IEnumerable<Card> cards = _cardRepository.FindCardsByOwner(cl.Id);
-
-                    if (cards.Count() == 6)
-                    {
-                        return new Response(HttpStatusCode.Forbidden, "El cliente no puede tener mas de 6 tarjetas");
-                    }
-
-                    CardType newCardType = (CardType)Enum.Parse(typeof(CardType), NewCard.Type);
-                    if (cards.Count(c => c.Type == newCardType) > 2)
-                        return new Response(HttpStatusCode.Forbidden,"El cliente ya tiene 3 tarjetas del mismo tipo");
-
-                    string cardNumber = generateNewCardNumber();
-                    Card ca = new Card()
-                    {
-                        ClientId = cl.Id,
-                        CardHolder = cl.FirstName + " " + cl.LastName,
-                        FromDate = DateTime.Now,
-                        ThruDate = DateTime.Now.AddYears(5),
-                        Type = newCardType,
-                        Color = (ColorType)Enum.Parse(typeof(ColorType), NewCard.Color),
-                        CVV = new Random().Next(000, 999),
-                        Number = cardNumber
-                    };
-                    _cardRepository.Save(ca);
-                    CardDTO AuxCard = new CardDTO(_cardRepository.FindByNumber(cardNumber));
-                    return new Response(HttpStatusCode.Created,AuxCard);
-
-                }
-            }
-            return new Response(HttpStatusCode.Forbidden,"El mail es invalido");
+            _clientRepository.Save(client);
         }
 
-        private string generateNewCardNumber()
+
+
+        private bool ValidateEntries(ClientSignUpDTO signUpDTO)
         {
-            string cardNumber;
-            Random random = new Random();
+            if (string.IsNullOrEmpty(signUpDTO.Email) || string.IsNullOrEmpty(signUpDTO.Password) ||
+                   string.IsNullOrEmpty(signUpDTO.FirstName) || string.IsNullOrEmpty(signUpDTO.LastName))
+                return false;
+            return true;
+        }
+
+        private bool ValidateEmail(string email)
+        {
+            if (_clientRepository.FindByEmail(email) != null)
+                return false;
+            return true;
+        }
+
+        private string GenerateNewAccountNumber()
+        {
+            string acNumber;
             do
             {
-                cardNumber = new Random().Next(1000, 10000).ToString();
-                for (var i = 0; i < 3; i++)
-                {
-                    cardNumber = cardNumber + " " + random.Next(1000, 10000).ToString();
-                }
-            } while (_cardRepository.FindByNumber(cardNumber) != null);
-            return cardNumber;
+                acNumber = new Random().Next(1000, 100000000).ToString();
+            } while (_accountRepository.FindByAccountNumber(acNumber) != null);
+            return acNumber;
         }
+
+
+
+        private static string GetHashCode(string Password)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] data = sha256.ComputeHash(Encoding.UTF8.GetBytes(Password));
+
+                string sBuilder = Convert.ToBase64String(data);
+
+                return sBuilder;
+            }
+        }
+
+        private bool VerifyPassword(string Input, string ClientDBPassword)
+        {
+            if (string.IsNullOrEmpty(Input))
+                return false;
+
+            string HashedPassword = GetHashCode(Input);
+            return string.Equals(ClientDBPassword.ToLower(), HashedPassword.ToLower());
+        }
+
+
     }
 }

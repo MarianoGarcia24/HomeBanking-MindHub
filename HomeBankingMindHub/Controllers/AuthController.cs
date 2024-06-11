@@ -3,6 +3,7 @@ using HomeBankingMindHub.Models;
 using HomeBankingMindHub.Repositories.Interfaces;
 using HomeBankingMindHub.Services;
 using HomeBankingMindHub.Services.Interfaces;
+using HomeBankingMindHub.utils;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -17,9 +18,11 @@ namespace HomeBankingMindHub.Controllers
     {
         private readonly IClientService _clientService;
         private readonly IAccountService _accountService;
-        public AuthController(IClientService clientService, IAccountService accountService) {
+        private readonly Utilities _utilities;
+        public AuthController(IClientService clientService, IAccountService accountService, Utilities utilities) {
             _clientService = clientService;
             _accountService = accountService;
+            _utilities = utilities;
         }
 
         [HttpPost("login")]
@@ -48,12 +51,11 @@ namespace HomeBankingMindHub.Controllers
                     claims,
                     CookieAuthenticationDefaults.AuthenticationScheme
                     );
-
+                
                 await HttpContext.SignInAsync(
                     CookieAuthenticationDefaults.AuthenticationScheme,
                     new ClaimsPrincipal(claimsIdentity)
                     );
-                return Ok("Cliente Autorizado");
             }
             catch (Exception ex)
             {

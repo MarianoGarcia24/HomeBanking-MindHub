@@ -34,36 +34,53 @@ namespace HomeBankingMindHub.Services.Implementations
                 return res;
             }
             long accountId;
-
-            Transaction FromTransaction = createTransactionObject(NewTransaction.FromAccountNumber, -NewTransaction.Amount,
+            using (var dbContextTransaction = _transactionRepository.BeginTransaction())
+            {
+                try
+                {
+                    Transaction FromTransaction = createTransactionObject(NewTransaction.FromAccountNumber, -NewTransaction.Amount,
                                         "Transferencia a cuenta " + NewTransaction.ToAccountNumber + ": "
                                          + NewTransaction.Description,
                                         "DEBIT");
 
-            _transactionRepository.Save(FromTransaction);
+                    _transactionRepository.Save(FromTransaction);
 
-            //No hago error handling porque si ocurre algo aca es interno (de la bases de datos)
+                    //No hago error handling porque si ocurre algo aca es interno (de la base de datos)
 
-            Transaction ToTransaction = createTransactionObject(NewTransaction.ToAccountNumber, NewTransaction.Amount,
-                                                                "Transferencia desde cuenta " + NewTransaction.FromAccountNumber + ": "
-                                                                + NewTransaction.Description, "CREDIT");
-                
-            _transactionRepository.Save(ToTransaction);
+                    Transaction ToTransaction = createTransactionObject(NewTransaction.ToAccountNumber, NewTransaction.Amount,
+                                                                        "Transferencia desde cuenta " + NewTransaction.FromAccountNumber + ": "
+                                                                        + NewTransaction.Description, "CREDIT");
 
-            //Aca lo mismo, las cuentas se que existen por validacion previa, entonces debo continuar sin hacer error handle.
-            accountId = _accountRepository.FindByAccountNumber(NewTransaction.ToAccountNumber).Id;
 
-            Account ToAccount = _accountRepository.FindById(accountId);
-            ToAccount.Balance += NewTransaction.Amount;
-            _accountRepository.Save(ToAccount);
+                    _transactionRepository.Save(ToTransaction);
 
-            accountId = _accountRepository.FindByAccountNumber(NewTransaction.FromAccountNumber).Id;
 
-            Account FromAccount = _accountRepository.FindById(accountId);
-            FromAccount.Balance -= NewTransaction.Amount;
-            _accountRepository.Save(FromAccount);
+                    //Aca lo mismo, las cuentas se que existen por validacion previa, entonces debo continuar sin hacer error handle.
+                    accountId = _accountRepository.FindByAccountNumber(NewTransaction.ToAccountNumber).Id;
 
-            return new Response(HttpStatusCode.Created, new TransactionDTO(FromTransaction));
+                    Account ToAccount = _accountRepository.FindById(accountId);
+                    ToAccount.Balance += NewTransaction.Amount;
+                    _accountRepository.Save(ToAccount);
+
+
+
+                    accountId = _accountRepository.FindByAccountNumber(NewTransaction.FromAccountNumber).Id;
+
+                    Account FromAccount = _accountRepository.FindById(accountId);
+                    FromAccount.Balance -= NewTransaction.Amount;
+                    _accountRepository.Save(FromAccount);
+
+                    dbContextTransaction.Commit();
+
+                    return new Response(HttpStatusCode.Created, new TransactionDTO(FromTransaction));
+                }
+                catch(Exception ex)
+                {
+                    dbContextTransaction.Rollback();
+                    return new Response(HttpStatusCode.InternalServerError, ex.Message);
+                }
+
+            }
         }
 
         public Response AccountBelongToUser(string Email, string AccountNumber)
@@ -89,7 +106,7 @@ namespace HomeBankingMindHub.Services.Implementations
 
         private Response ValidateParameters(NewTransactionDTO NewTransaction)
         {
-            if (NewTransaction.Amount == 0 || NewTransaction.Description.IsNullOrEmpty()
+            if (NewTransaction.Amount <= 0 || NewTransaction.Description.IsNullOrEmpty()
                 || NewTransaction.ToAccountNumber.IsNullOrEmpty() || NewTransaction.ToAccountNumber.IsNullOrEmpty())
                 return new Response(HttpStatusCode.Forbidden, "Hay uno o más parámetros nulos. Intente nuevamente");
             if (String.Equals(NewTransaction.FromAccountNumber, NewTransaction.ToAccountNumber))

@@ -1,4 +1,5 @@
 ﻿using HomeBankingMindHub.Models;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace HomeBankingMindHub.Repositories.Interfaces
 {
@@ -7,5 +8,7 @@ namespace HomeBankingMindHub.Repositories.Interfaces
         IEnumerable<Loan> GetAll();
         Loan FindById(long id);
         void Save(Loan loan);
+        IDbContextTransaction BeginTransaction();
+
     }
 }

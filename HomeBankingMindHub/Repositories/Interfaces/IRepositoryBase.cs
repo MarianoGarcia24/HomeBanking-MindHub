@@ -13,5 +13,6 @@ namespace HomeBankingMindHub.Repositories.Interfaces
         void Update(T entity);
         void Delete(T entity);
         void SaveChanges();
+
     }
 }

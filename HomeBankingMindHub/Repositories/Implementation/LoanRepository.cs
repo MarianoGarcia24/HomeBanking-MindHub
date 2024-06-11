@@ -1,6 +1,7 @@
 ﻿using HomeBankingMindHub.Models;
 using HomeBankingMindHub.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace HomeBankingMindHub.Repositories.Implementation
 {
@@ -28,5 +29,12 @@ namespace HomeBankingMindHub.Repositories.Implementation
             Create(loan);
             SaveChanges();
         }
+
+        public IDbContextTransaction BeginTransaction()
+        {
+            return RepositoryContext.Database.BeginTransaction();
+        }
+
+
     }
 }

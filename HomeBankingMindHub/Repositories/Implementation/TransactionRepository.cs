@@ -1,5 +1,6 @@
 ﻿using HomeBankingMindHub.Models;
 using HomeBankingMindHub.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace HomeBankingMindHub.Repositories.Implementation
 {
@@ -28,5 +29,9 @@ namespace HomeBankingMindHub.Repositories.Implementation
             RepositoryContext.ChangeTracker.Clear();
         }
 
+        public IDbContextTransaction BeginTransaction()
+        {
+            return RepositoryContext.Database.BeginTransaction();
+        }
     }
 }

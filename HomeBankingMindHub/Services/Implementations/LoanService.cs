@@ -55,55 +55,61 @@ namespace HomeBankingMindHub.Services.Implementations
 
         public Response CreateNewLoan(LoanApplicationDTO NewLoan, string email)
         {
-            try
-            {
+            using var dbContextTransaction = _loanRepository.BeginTransaction();
+                try
+                {
                 Response res = ValidateProperties(NewLoan, email);
 
                 if (res.StatusCode == 200)
                 {
-                    Account acc = _accountRepository.FindByAccountNumber(NewLoan.ToAccountNumber);
-                    Client cl = _clientRepository.FindByEmail(email);
-                    Loan loan = _loanRepository.FindById(NewLoan.LoanId);
-
-                    Transaction tr = new()
                     {
-                        Amount = NewLoan.Amount,
-                        AccountId = acc.Id,
-                        Date = DateTime.Now,
-                        Description = _loanRepository.FindById(NewLoan.LoanId).Name + ": loan aprroved",
-                        Type = Models.utils.TransactionType.CREDIT,
-                    };
+                        Account acc = _accountRepository.FindByAccountNumber(NewLoan.ToAccountNumber);
+                        Client cl = _clientRepository.FindByEmail(email);
+                        Loan loan = _loanRepository.FindById(NewLoan.LoanId);
 
-                    _transactionRepository.Save(tr);
+                        Transaction tr = new()
+                        {
+                            Amount = NewLoan.Amount,
+                            AccountId = acc.Id,
+                            Date = DateTime.Now,
+                            Description = _loanRepository.FindById(NewLoan.LoanId).Name + ": loan aprroved",
+                            Type = Models.utils.TransactionType.CREDIT,
+                        };
 
-                    acc.Balance += NewLoan.Amount;
-                    _accountRepository.Save(acc);
+                        _transactionRepository.Save(tr);
 
-                    ClientLoan cloan = new()
-                    {
-                        Amount = NewLoan.Amount * 1.20,
-                        ClientId = cl.Id,
-                        LoanId = NewLoan.LoanId,
-                        Payments = NewLoan.Payments,
-                    };
+                        acc.Balance += NewLoan.Amount;
+                        _accountRepository.Save(acc);
 
+                        ClientLoan cloan = new()
+                        {
+                            Amount = NewLoan.Amount * 1.20,
+                            ClientId = cl.Id,
+                            LoanId = NewLoan.LoanId,
+                            Payments = NewLoan.Payments,
+                        };
 
-                    _clientLoanRepository.Save(cloan);
+                        _clientLoanRepository.Save(cloan);
 
-                    res = new Response(HttpStatusCode.OK, new ClientLoanDTO()
-                    {
-                        Amount = cloan.Amount,
-                        LoanId = NewLoan.LoanId,
-                        Name = loan.Name,
-                        Payments = int.Parse(NewLoan.Payments)
+                        res = new Response(HttpStatusCode.OK, new ClientLoanDTO()
+                        {
+                            Amount = cloan.Amount,
+                            LoanId = NewLoan.LoanId,
+                            Name = loan.Name,
+                            Payments = int.Parse(NewLoan.Payments)
 
-                    });
+                        });
+
+                        dbContextTransaction.Commit();
+                    }
+                  
                 }
 
                 return res;
             }
             catch (Exception ex)
             {
+                dbContextTransaction.Rollback();
                 return new Response(HttpStatusCode.BadRequest, ex.Message);
             }
         }

@@ -3,6 +3,7 @@ using HomeBankingMindHub.Models;
 using HomeBankingMindHub.Repositories.Interfaces;
 using HomeBankingMindHub.Services;
 using HomeBankingMindHub.Services.Interfaces;
+using HomeBankingMindHub.utils;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -17,9 +18,11 @@ namespace HomeBankingMindHub.Controllers
     {
         private readonly IClientService _clientService;
         private readonly IAccountService _accountService;
-        public AuthController(IClientService clientService, IAccountService accountService) {
+        private readonly Utilities _utilities;
+        public AuthController(IClientService clientService, IAccountService accountService, Utilities utilities) {
             _clientService = clientService;
             _accountService = accountService;
+            _utilities = utilities;
         }
 
         [HttpPost("login")]
@@ -32,28 +35,13 @@ namespace HomeBankingMindHub.Controllers
                 if (res.StatusCode != 200)
                     return StatusCode(res.StatusCode, res.Data);
 
-                var claims = new List<Claim>
-                {
-                    new Claim("Client", client.Email)
-                };
-
-
-                if (client.Email == "kobe23@gmail.com")
-                    claims.Add(new Claim("Admin", client.Email));
 
                 //ClaimIdentity ==> se genera una identidad para identificar que alguien esta pidiendo
                 // algo. Queremos saber quien esta pidiendo algo, y que es lo que está pidiendo.
 
-                var claimsIdentity = new ClaimsIdentity(
-                    claims,
-                    CookieAuthenticationDefaults.AuthenticationScheme
-                    );
 
-                await HttpContext.SignInAsync(
-                    CookieAuthenticationDefaults.AuthenticationScheme,
-                    new ClaimsPrincipal(claimsIdentity)
-                    );
-                return Ok("Cliente Autorizado");
+                return StatusCode(res.StatusCode, new { isSuccess = true, token = _utilities.generateJWT((Client)res.Data) });
+
             }
             catch (Exception ex)
             {

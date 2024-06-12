@@ -112,7 +112,7 @@ namespace HomeBankingMindHub.Controllers
                 Response res = GetClientEmail();
                 if (res.StatusCode == 200)
                 {
-                      res = _clientService.CreateNewAccount((string)res.Data);
+                      res = _accountService.CreateNewAccount((string)res.Data);
                       return StatusCode(res.StatusCode, res.Data);
                 }
                 return StatusCode(res.StatusCode, res.Data);

@@ -7,5 +7,6 @@ namespace HomeBankingMindHub.Services.Interfaces
     {
         Response GetAllAccounts();
         Response GetAccountDTOById(long id);
+        Response CreateNewAccount(string email);
     }
 }

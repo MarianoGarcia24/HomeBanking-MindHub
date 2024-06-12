@@ -49,7 +49,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         {
             options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
             options.LoginPath = new PathString("/index.html");
-            options.SlidingExpiration = true;
         });
 
 //Autorizacion
@@ -87,6 +86,7 @@ else
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 app.UseStaticFiles();
 
 app.UseRouting();

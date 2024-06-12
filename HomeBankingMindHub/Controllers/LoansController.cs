@@ -44,6 +44,7 @@ namespace HomeBankingMindHub.Controllers
                 string email = User.FindFirst("Client") != null ? User.FindFirst("Client").Value : string.Empty;
                 Response res = email.IsNullOrEmpty() ? new Response(HttpStatusCode.Forbidden, "No hay cliente asociado")
                         : new Response(HttpStatusCode.OK, email);
+
                 if (res.StatusCode == 200) {
                     res = _loanService.CreateNewLoan(NewLoan,email);
                 }

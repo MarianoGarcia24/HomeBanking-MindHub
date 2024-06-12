@@ -49,6 +49,7 @@ namespace HomeBankingMindHub.Controllers
                     claims,
                     CookieAuthenticationDefaults.AuthenticationScheme
                     );
+
                 
                 await HttpContext.SignInAsync(
                     CookieAuthenticationDefaults.AuthenticationScheme,

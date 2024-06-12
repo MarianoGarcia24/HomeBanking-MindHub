@@ -36,14 +36,14 @@ namespace HomeBankingMindHub.Services.Implementations
             Account account = _accountRepository.FindByAccountNumber(NewLoan.ToAccountNumber);
             Client client = _clientRepository.FindByEmail(email);
 
-            if (NewLoan.Payments.IsNullOrEmpty() || NewLoan.Amount == 0)
+            if (NewLoan.Payments.IsNullOrEmpty() || NewLoan.Amount <= 0)
                 return new Response(HttpStatusCode.Forbidden, "El monto o las cuotas son invalidos");
             if (loan == null)
                 return new Response(HttpStatusCode.Forbidden, "El prestamo ingresado no existe");
             if (loan.MaxAmount < NewLoan.Amount)
                 return new Response(HttpStatusCode.Forbidden, "El monto supera el maximo permitido para el tipo de prestamo");
             if (!loan.Payments.Contains(NewLoan.Payments))
-                return new Response(HttpStatusCode.Forbidden, "El monto supera el maximo permitido para el tipo de prestamo");
+                return new Response(HttpStatusCode.Forbidden, "El numero de cuotas es invalido");
             if (account == null)
                 return new Response(HttpStatusCode.Forbidden, "La cuenta ingresada no existe");
 

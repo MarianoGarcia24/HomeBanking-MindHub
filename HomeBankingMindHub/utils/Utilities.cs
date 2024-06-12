@@ -19,8 +19,7 @@ namespace HomeBankingMindHub.utils
         {
             var userClaims = new List<Claim>
             {
-                new Claim(ClaimTypes.Email, client.Email.ToString()),
-                new Claim("Client",client.Email)
+                new Claim("Client", client.Email)
             };
 
             if (client.Email == "kobe23@gmail.com")
